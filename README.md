@@ -4,43 +4,34 @@
 
 ---
 
-## 📋 Giới Thiệu
+##  Giới Thiệu
 
 Dự án sử dụng thuật toán **NEAT** (NeuroEvolution of Augmenting Topologies) để huấn luyện AI chơi game Pong. NEAT là một phương pháp tiến hóa mạng neural, tự động tối ưu hóa cả cấu trúc mạng lẫn trọng số kết nối.
 
 ### ✨ Tính Năng Chính
 
-- 🧠 **AI Training**: Huấn luyện AI với thuật toán NEAT evolution
-- 🎨 **Modern UI**: Giao diện đồ họa hiện đại với gradient, particles, animations
-- ⚡ **Optimized Performance**: Training siêu nhanh (0.05s/generation, 3800x faster)
-- 📊 **Analytics Dashboard**: Theo dõi quá trình huấn luyện real-time
-- 🎯 **3 Difficulty Levels**: Easy, Medium, Hard AI opponents
-- 💾 **Model Management**: Lưu và load trained models
-- 🎮 **Smooth Gameplay**: 60 FPS với physics chính xác
+-  **AI Training**: Huấn luyện AI với thuật toán NEAT evolution
+-  **Modern UI**: Giao diện đồ họa hiện đại với gradient, particles, animations
+-  **Optimized Performance**: Training siêu nhanh (0.05s/generation, 3800x faster)
+-  **Analytics Dashboard**: Theo dõi quá trình huấn luyện real-time
+-  **3 Difficulty Levels**: Easy, Medium, Hard AI opponents
+-  **Model Management**: Lưu và load trained models
+-  **Smooth Gameplay**: 60 FPS với physics chính xác
 
 ---
 
-## 👥 Team Members
 
-| Thành Viên | Vai Trò | Trách Nhiệm |
-|------------|---------|-------------|
-| **TV1** (Trí Hoàng) | AI Engineer | AI Engine & Neural Networks |
-| **TV2** (Dũng) | Game Developer | Game Physics & Mechanics |
-| **TV3** (Trọng Đức) | Data Analyst | Analytics & Training Dashboard |
-| **TV4** (Bảo) | UI/UX Designer | UI & Visual Effects |
-
----
 
 ## 🛠️ Cài Đặt & Chạy Project
 
-### 1️⃣ Clone Repository
+### 1️ Clone Repository
 
 ```bash
 git clone https://github.com/ntrduc1310/-NEAT-PONG-AI.git
 cd -NEAT-PONG-AI
 ```
 
-### 2️⃣ Cài Đặt Dependencies
+### 2️ Cài Đặt Dependencies
 
 **Yêu cầu**: Python 3.8+
 
@@ -54,7 +45,7 @@ pip install -r requirements.txt
 - `matplotlib==3.9.3` - Data visualization
 - `numpy==2.2.1` - Numerical computing
 
-### 3️⃣ Chạy Game
+### 3️ Chạy Game
 
 **Cách 1: Từ thư mục gốc**
 ```bash
@@ -69,7 +60,7 @@ python src/main.py
 
 ---
 
-## 🎯 Hướng Dẫn Sử Dụng
+##  Hướng Dẫn Sử Dụng
 
 ### Menu Chính
 
@@ -81,7 +72,7 @@ Khi khởi động, bạn sẽ thấy menu với các options:
 4. **[3] Hard AI** - Chơi với AI level khó
 5. **< Quit >** - Thoát game
 
-### 🧠 Huấn Luyện AI
+###  Huấn Luyện AI
 
 1. Chọn option **">> Train AI Network"**
 2. Chọn difficulty level (easy/medium/hard)
@@ -93,7 +84,7 @@ Khi khởi động, bạn sẽ thấy menu với các options:
 - Logs được lưu vào `logs/` folder
 - Model tốt nhất được lưu với config
 
-### 🎮 Chơi Game
+###  Chơi Game
 
 **Controls**:
 - `W` - Di chuyển lên
@@ -108,7 +99,7 @@ Khi khởi động, bạn sẽ thấy menu với các options:
 
 ---
 
-## 📁 Cấu Trúc Project
+##  Cấu Trúc Project
 
 ```
 NEAT-Pong-Python/
@@ -138,7 +129,7 @@ NEAT-Pong-Python/
 
 ---
 
-## ⚙️ NEAT Configuration
+##  NEAT Configuration
 
 File config tại `config/config-feedforward.txt`:
 
@@ -156,7 +147,7 @@ File config tại `config/config-feedforward.txt`:
 
 ---
 
-## 🚀 Performance Optimization
+##  Performance Optimization
 
 Dự án đã được optimize để training **cực nhanh**:
 
@@ -172,7 +163,7 @@ Dự án đã được optimize để training **cực nhanh**:
 
 ---
 
-## 📊 Training Analytics
+##  Training Analytics
 
 Mỗi lần training sẽ tạo 2 files trong `logs/`:
 
@@ -197,7 +188,7 @@ print(df['best_fitness'].max())
 
 ---
 
-## 🎨 UI Features
+##  UI Features
 
 ### Visual Effects
 - **Gradient Backgrounds** - Modern color schemes
@@ -214,7 +205,7 @@ print(df['best_fitness'].max())
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Lỗi: "No module named 'neat'"
 ```bash
@@ -240,7 +231,7 @@ pip install pygame
 
 ---
 
-## 📚 Tài Liệu Tham Khảo
+##  Tài Liệu Tham Khảo
 
 - [NEAT Algorithm Paper](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf)
 - [NEAT-Python Documentation](https://neat-python.readthedocs.io/)
@@ -248,13 +239,13 @@ pip install pygame
 
 ---
 
-## 📝 License
+##  License
 
 MIT License - Free to use for educational purposes
 
 ---
 
-## 🙏 Credits
+##  Credits
 
 - **NEAT Algorithm**: Kenneth O. Stanley
 - **Original Tutorial**: Tech With Tim
@@ -263,12 +254,4 @@ MIT License - Free to use for educational purposes
 
 ---
 
-## 📞 Contact
 
-**Repository**: [https://github.com/ntrduc1310/MINIPROJECTAI_NEATPONG](https://github.com/ntrduc1310/MINIPROJECTAI_NEATPONG)
-
-**Issues**: Báo bug hoặc đề xuất tính năng tại [Issues page](https://github.com/ntrduc1310/MINIPROJECTAI_NEATPONG/issues)
-
----
-
-**Made with 🧠 by NEAT Neural Evolution**  
