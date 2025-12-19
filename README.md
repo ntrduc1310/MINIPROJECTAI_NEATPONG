@@ -8,7 +8,7 @@
 
 Dự án sử dụng thuật toán **NEAT** (NeuroEvolution of Augmenting Topologies) để huấn luyện AI chơi game Pong. NEAT là một phương pháp tiến hóa mạng neural, tự động tối ưu hóa cả cấu trúc mạng lẫn trọng số kết nối.
 
-### ✨ Tính Năng Chính
+###  Tính Năng Chính
 
 -  **AI Training**: Huấn luyện AI với thuật toán NEAT evolution
 -  **Modern UI**: Giao diện đồ họa hiện đại với gradient, particles, animations
@@ -22,7 +22,7 @@ Dự án sử dụng thuật toán **NEAT** (NeuroEvolution of Augmenting Topolo
 
 
 
-## 🛠️ Cài Đặt & Chạy Project
+##  Cài Đặt & Chạy Project
 
 ### 1️ Clone Repository
 
