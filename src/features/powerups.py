@@ -15,7 +15,6 @@ class PowerUpType:
     PADDLE_SPEED_UP = "paddle_speed_up"    # Icon: Tia sét (⚡)
 
 
-
 class PowerUp:
     """Một power-up instance"""
 
