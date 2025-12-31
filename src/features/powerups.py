@@ -124,7 +124,10 @@ class PowerUp:
 
 
     def check_collision(self, ball_x, ball_y, ball_radius):
-
+        """
+        [CẢI TIẾN] Kiểm tra va chạm giữa Hình Tròn (Bóng) và Hình Chữ Nhật (PowerUp).
+        Chính xác hơn cách check Box-Box cũ của code gốc.
+        """
         if not self.active:
             return False
 
