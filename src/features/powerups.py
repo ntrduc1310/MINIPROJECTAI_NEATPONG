@@ -124,7 +124,6 @@ class PowerUp:
 
 
     def check_collision(self, ball_x, ball_y, ball_radius):
-
         if not self.active:
             return False
 
