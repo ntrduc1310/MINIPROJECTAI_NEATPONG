@@ -43,13 +43,27 @@ class Ball:
     
     def draw(self, win, color=(255, 255, 255)):
         """
-        Vẽ bóng
+        Vẽ bóng với glow effect
         
         Args:
             win: Pygame window
             color: Màu bóng (RGB tuple)
         """
+        # Outer glow
+        glow_radius = self.RADIUS + 4
+        glow_surf = pygame.Surface((glow_radius * 2, glow_radius * 2), pygame.SRCALPHA)
+        for i in range(3, 0, -1):
+            alpha = 40 - i * 10
+            glow_color = (*color, alpha)
+            pygame.draw.circle(glow_surf, glow_color, (glow_radius, glow_radius), self.RADIUS + i)
+        win.blit(glow_surf, (self.x - glow_radius, self.y - glow_radius))
+        
+        # Main ball
         pygame.draw.circle(win, color, (self.x, self.y), self.RADIUS)
+        
+        # Inner highlight
+        highlight_color = tuple(min(255, c + 100) for c in color)
+        pygame.draw.circle(win, highlight_color, (self.x - 2, self.y - 2), self.RADIUS // 2)
     
     def move(self):
         """Di chuyển bóng theo vận tốc"""

@@ -29,14 +29,28 @@ class Paddle:
     
     def draw(self, win, color=(255, 255, 255)):
         """
-        Vẽ vợt
+        Vẽ vợt với gradient và glow
         
         Args:
             win: Pygame window
             color: Màu vợt (RGB tuple)
         """
         current_height = int(self.HEIGHT * self.height_modifier)
-        pygame.draw.rect(win, color, (self.x, self.y, self.WIDTH, current_height))
+        
+        # Glow effect
+        glow_surf = pygame.Surface((self.WIDTH + 8, current_height + 8), pygame.SRCALPHA)
+        glow_color = (*color, 60)
+        pygame.draw.rect(glow_surf, glow_color, glow_surf.get_rect(), border_radius=6)
+        win.blit(glow_surf, (self.x - 4, self.y - 4))
+        
+        # Main paddle with gradient
+        for i in range(self.WIDTH):
+            progress = i / self.WIDTH
+            gradient_color = tuple(int(color[j] * (0.7 + 0.3 * progress)) for j in range(3))
+            pygame.draw.rect(win, gradient_color, (self.x + i, self.y, 1, current_height))
+        
+        # Border highlight
+        pygame.draw.rect(win, color, (self.x, self.y, self.WIDTH, current_height), 2, border_radius=4)
     
     def move(self, up=True):
         """

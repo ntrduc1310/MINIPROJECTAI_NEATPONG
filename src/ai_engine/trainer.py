@@ -6,6 +6,7 @@ import pygame
 import neat
 import time
 from game_engine.game_manager import GameManager
+from .difficulty_system import get_neat_config_for_difficulty, DifficultyConfig
 
 
 class NEATTrainer:
@@ -41,19 +42,48 @@ class NEATTrainer:
             # Create invisible surface for headless training
             self.window = pygame.Surface((width, height))
     
-    def train_ai(self, reporter=None, generations=None):
+    def train_ai(self, reporter=None, generations=None, difficulty='medium'):
         """
-        Train AI using NEAT algorithm
+        Train AI using NEAT algorithm with difficulty-specific configs
         
         Args:
             reporter: NEAT reporter (optional)
             generations: Number of generations (None = use config)
+            difficulty: 'easy', 'medium', or 'hard'
         
         Returns:
             Best genome after training
         """
+        # Get difficulty config
+        diff_config = DifficultyConfig.get_config(difficulty)
+        
+        # Update NEAT config based on difficulty
+        if difficulty == 'easy':
+            self.config.genome_config.num_hidden = 0
+        elif difficulty == 'medium':
+            self.config.genome_config.num_hidden = 2
+        else:
+            self.config.genome_config.num_hidden = 4
+        
+        # Use difficulty-specific population size
+        self.config.pop_size = diff_config['pop_size']
+        self.config.fitness_threshold = diff_config['fitness_threshold']
+        
+        # CRITICAL: Force set min_species_size to 1 to avoid conflicts
+        # Must be done BEFORE creating population
+        if hasattr(self.config, 'reproduction_config'):
+            self.config.reproduction_config.min_species_size = 1
+        
+        # Also try setting directly on config object
+        if hasattr(self.config, 'min_species_size'):
+            self.config.min_species_size = 1
+        
         # Create population
         population = neat.Population(self.config)
+        
+        # Patch reproduction.min_species_size after population init
+        if hasattr(population.reproduction, 'min_species_size'):
+            population.reproduction.min_species_size = 1
         
         # Add reporters
         population.add_reporter(neat.StdOutReporter(True))
@@ -63,13 +93,11 @@ class NEATTrainer:
         if reporter:
             population.add_reporter(reporter)
         
-        # Train
+        # Start evolution
         if generations is None:
-            generations = 50  # Default
+            generations = diff_config['generations']
         
-        print(f"Training for {generations} generations...")
-        
-        # Run evolution
+        # Run NEAT
         winner = population.run(self._eval_genomes, generations)
         
         return winner

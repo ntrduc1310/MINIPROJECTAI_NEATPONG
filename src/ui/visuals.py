@@ -51,12 +51,12 @@ class AssetManager:
                     if os.path.exists(font_path):
                         self.fonts[key] = pygame.font.Font(font_path, size)
                     else:
-                        print(f"⚠️ Font not found: {font_path}, using default")
+                        print(f"Warning: Font not found: {font_path}, using default")
                         self.fonts[key] = pygame.font.Font(None, size)
                 else:
                     self.fonts[key] = pygame.font.Font(None, size)
             except Exception as e:
-                print(f"❌ Error loading font {name}: {e}")
+                print(f"Error loading font {name}: {e}")
                 self.fonts[key] = pygame.font.Font(None, size)
         
         return self.fonts[key]

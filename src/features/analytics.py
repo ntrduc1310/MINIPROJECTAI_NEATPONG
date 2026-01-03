@@ -1,6 +1,6 @@
 """
 Training Analytics - TV3 (Trọng Đức)
-Hệ thống phân tích và trực quan hóa training
+Game Engine & Hệ thống phân tích và trực quan hóa training
 """
 import pygame
 import csv
@@ -53,9 +53,9 @@ class TrainingAnalytics:
                     'Duration(s)',
                     'Timestamp'
                 ])
-            print(f"📊 Generation log: {self.generation_log}")
+            print(f" > Logs: generation_{timestamp}.csv")
         except Exception as e:
-            print(f"❌ Error creating generation log: {e}")
+            print(f" ! Log error: {e}")
     
     def _init_genome_log(self):
         """Tạo CSV header cho genome log"""
@@ -70,9 +70,9 @@ class TrainingAnalytics:
                     'Connections',
                     'Timestamp'
                 ])
-            print(f"📊 Genome log: {self.genome_log}")
+            print(f" > Logs: genome_{timestamp}.csv")
         except Exception as e:
-            print(f"❌ Error creating genome log: {e}")
+            print(f" ! Log error: {e}")
     
     def log_generation(self, generation, population):
         """
@@ -126,7 +126,7 @@ class TrainingAnalytics:
             self.total_generations = generation
             
         except Exception as e:
-            print(f"❌ Error logging generation: {e}")
+            print(f"! Error logging generation: {e}")
     
     def log_genome(self, generation, genome_id, genome):
         """
@@ -153,7 +153,7 @@ class TrainingAnalytics:
                     datetime.now().isoformat()
                 ])
         except Exception as e:
-            print(f"❌ Error logging genome: {e}")
+            print(f"! Error logging genome: {e}")
     
     def record_generation_time(self, duration):
         """Ghi lại thời gian training của generation"""
@@ -206,7 +206,7 @@ class TrainingDashboard:
             self.font = pygame.font.Font(None, 30)
             self.title_font = pygame.font.Font(None, 40)
         except Exception as e:
-            print(f"⚠️ Font init warning: {e}")
+            print(f"!️ Font init warning: {e}")
             self.font = pygame.font.Font(None, 30)
             self.title_font = pygame.font.Font(None, 40)
     
@@ -366,30 +366,28 @@ class NEATReporter(neat.reporting.BaseReporter):
     def start_generation(self, generation):
         """Bắt đầu generation"""
         self.generation_start_time = time.time()
-        print(f"\n🚀 Generation {generation} started")
+        if generation % 10 == 0:  # Chi hien thi moi 10 gen
+            print(f" Gen {generation}...", end='', flush=True)
     
     def end_generation(self, config, population, species_set):
         """Kết thúc generation"""
         if self.generation_start_time:
             duration = time.time() - self.generation_start_time
             self.analytics.record_generation_time(duration)
-            print(f"⏱️  Generation completed in {duration:.2f}s")
     
     def post_evaluate(self, config, population, species, best_genome):
         """Sau khi evaluate"""
-        # Log generation stats
+        # Log data
         generation = self.analytics.total_generations + 1
         self.analytics.log_generation(generation, population)
         
-        # Log individual genomes
         for genome_id, genome in population.items():
             self.analytics.log_genome(generation, genome_id, genome)
         
-        # Print best
-        if best_genome.fitness:
-            print(f"🏆 Best fitness: {best_genome.fitness:.2f}")
+        # Print progress every 10 generations
+        if generation % 10 == 0 and best_genome.fitness:
+            print(f" fitness={best_genome.fitness:.1f}")
     
     def found_solution(self, config, generation, best):
         """Tìm được solution"""
-        print(f"\n🎉 Solution found at generation {generation}!")
-        print(f"🏆 Best fitness: {best.fitness:.2f}")
+        print(f"\n Solution found! Generation {generation}, Fitness: {best.fitness:.2f}")

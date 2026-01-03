@@ -12,7 +12,7 @@ class PowerUpType:
     PADDLE_SIZE_DOWN = "paddle_size_down"  # Icon: Dấu trừ (-)
     BALL_SPEED_UP = "ball_speed_up"        # Icon: Mũi tên kép (>>)
     BALL_SPEED_DOWN = "ball_speed_down"    # Icon: Mũi tên lùi (<<)
-    PADDLE_SPEED_UP = "paddle_speed_up"    # Icon: Tia sét (⚡)
+    PADDLE_SPEED_UP = "paddle_speed_up"    # Icon: Tia sét (>)
 
 
 class PowerUp:
@@ -111,7 +111,7 @@ class PowerUp:
             pygame.draw.polygon(win, color, [t2_p1, t2_p2, t2_p3])
 
         elif self.type == PowerUpType.PADDLE_SPEED_UP:
-            # Vẽ tia sét (⚡) sắc nét hơn
+            # Vẽ tia sét (>) sắc nét hơn
             points = [
                 (cx + 8, cy - 18),  # Đỉnh trên phải
                 (cx - 2, cy - 2),   # Eo giữa
@@ -207,7 +207,7 @@ class PowerUpManager:
         powerup = PowerUp(x, y, powerup_type)
         self.active_powerups.append(powerup)
 
-        print(f"✨ Power-up spawned: {powerup_type} at ({x}, {y})")
+        print(f"> Power-up spawned: {powerup_type} at ({x}, {y})")
 
     def check_collisions(self, ball_x, ball_y, ball_radius):
         """
@@ -233,7 +233,7 @@ class PowerUpManager:
             'type': powerup_type,
             'expires': pygame.time.get_ticks() + duration
         }
-        print(f"⚡ Effect activated: {powerup_type} for {duration/1000}s")
+        print(f"> Effect activated: {powerup_type} for {duration/1000}s")
 
     def get_modifiers(self):
         """

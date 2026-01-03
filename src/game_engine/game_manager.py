@@ -65,31 +65,71 @@ class GameManager:
         self.right_hits = 0
     
     def _draw_score(self):
-        """Vẽ điểm số"""
-        left_score_text = self.SCORE_FONT.render(f"{self.left_score}", 1, self.WHITE)
-        right_score_text = self.SCORE_FONT.render(f"{self.right_score}", 1, self.WHITE)
+        """Vẽ điểm số với modern styling"""
+        # Player labels
+        label_font = pygame.font.Font(None, 28)
+        player_label = label_font.render("< YOU", True, (100, 200, 255))
+        ai_label = label_font.render("AI >", True, (255, 100, 100))
         
-        self.window.blit(left_score_text, 
-                        (self.window_width // 4 - left_score_text.get_width() // 2, 20))
-        self.window.blit(right_score_text, 
-                        (self.window_width * 3 // 4 - right_score_text.get_width() // 2, 20))
+        self.window.blit(player_label, 
+                        (self.window_width // 4 - player_label.get_width() // 2, 15))
+        self.window.blit(ai_label, 
+                        (self.window_width * 3 // 4 - ai_label.get_width() // 2, 15))
+        
+        # Scores with shadow
+        left_color = (100, 200, 255)
+        right_color = (255, 100, 100)
+        
+        # Left score
+        shadow_left = self.SCORE_FONT.render(f"{self.left_score}", True, (0, 0, 0))
+        left_score_text = self.SCORE_FONT.render(f"{self.left_score}", True, left_color)
+        left_x = self.window_width // 4 - left_score_text.get_width() // 2
+        self.window.blit(shadow_left, (left_x + 2, 52))
+        self.window.blit(left_score_text, (left_x, 50))
+        
+        # Right score
+        shadow_right = self.SCORE_FONT.render(f"{self.right_score}", True, (0, 0, 0))
+        right_score_text = self.SCORE_FONT.render(f"{self.right_score}", True, right_color)
+        right_x = self.window_width * 3 // 4 - right_score_text.get_width() // 2
+        self.window.blit(shadow_right, (right_x + 2, 52))
+        self.window.blit(right_score_text, (right_x, 50))
     
     def _draw_hits(self):
-        """Vẽ số hits"""
-        hits_text = self.SCORE_FONT.render(
-            f"{self.left_hits + self.right_hits}", 1, self.RED
-        )
+        """Vẽ số hits với background"""
+        total_hits = self.left_hits + self.right_hits
+        
+        # Background box
+        box_width = 120
+        box_height = 35
+        box_x = self.window_width // 2 - box_width // 2
+        box_y = self.window_height - 50
+        
+        # Semi-transparent background
+        bg_surf = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+        pygame.draw.rect(bg_surf, (30, 30, 50, 180), bg_surf.get_rect(), border_radius=8)
+        self.window.blit(bg_surf, (box_x, box_y))
+        
+        # Hits text
+        hits_font = pygame.font.Font(None, 28)
+        hits_text = hits_font.render(f"HITS: {total_hits}", True, (255, 220, 100))
         self.window.blit(hits_text, 
-                        (self.window_width // 2 - hits_text.get_width() // 2, 10))
+                        (self.window_width // 2 - hits_text.get_width() // 2, box_y + 8))
     
     def _draw_divider(self):
-        """Vẽ đường chia giữa"""
-        for i in range(10, self.window_height, self.window_height // 20):
-            if i % 2 == 1:
-                continue
+        """Vẽ đường chia giữa với modern style"""
+        center_x = self.window_width // 2
+        dash_height = 15
+        dash_spacing = 30
+        
+        for i in range(0, self.window_height, dash_spacing):
+            # Gradient color based on position
+            progress = i / self.window_height
+            alpha = int(120 + 60 * abs(0.5 - progress))
+            color = (80, 150, 200) if i % 60 == 0 else (60, 120, 180)
+            
             pygame.draw.rect(
-                self.window, self.WHITE, 
-                (self.window_width // 2 - 5, i, 10, self.window_height // 20)
+                self.window, color,
+                (center_x - 2, i, 4, dash_height)
             )
     
     def handle_collision(self):
@@ -154,10 +194,20 @@ class GameManager:
         Args:
             draw_score: Vẽ điểm số
             draw_hits: Vẽ số hits
-            bg_color: Màu background (None = BLACK)
+            bg_color: Màu background (None = gradient)
         """
-        bg = bg_color if bg_color else self.BLACK
-        self.window.fill(bg)
+        if bg_color:
+            self.window.fill(bg_color)
+        else:
+            # Gradient background
+            for y in range(self.window_height):
+                progress = y / self.window_height
+                color = (
+                    int(5 + 10 * progress),
+                    int(10 + 15 * progress),
+                    int(20 + 25 * progress)
+                )
+                pygame.draw.line(self.window, color, (0, y), (self.window_width, y))
         
         self._draw_divider()
         
@@ -167,10 +217,10 @@ class GameManager:
         if draw_hits:
             self._draw_hits()
         
-        # Vẽ game objects
-        self.left_paddle.draw(self.window)
-        self.right_paddle.draw(self.window)
-        self.ball.draw(self.window)
+        # Vẽ game objects với màu đẹp hơn
+        self.left_paddle.draw(self.window, color=(100, 200, 255))  # Blue for player
+        self.right_paddle.draw(self.window, color=(255, 100, 100))  # Red for AI
+        self.ball.draw(self.window, color=(255, 255, 255))  # White ball
     
     def move_paddle(self, left=True, up=True):
         """
@@ -185,7 +235,7 @@ class GameManager:
         """
         paddle = self.left_paddle if left else self.right_paddle
         paddle_height = paddle.get_current_height()
-        vel = Paddle.VEL * paddle.speed_modifier
+        vel = paddle.VEL * paddle.speed_modifier
         
         if left:
             if up and paddle.y - vel < 0:

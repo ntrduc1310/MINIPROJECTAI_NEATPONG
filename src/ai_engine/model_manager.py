@@ -57,9 +57,9 @@ class ModelManager:
             data = {'genome': genome, 'config': config} if config else genome
             with open(filepath, 'wb') as f:
                 pickle.dump(data, f)
-            print(f"✓ Saved {difficulty} AI model to {filepath}")
+            print(f" > Saved {difficulty} AI model")
         except Exception as e:
-            print(f"✗ Error saving model: {e}")
+            print(f" ! Error saving: {e}")
             raise
     
     def load_model(self, difficulty='medium'):
@@ -98,10 +98,56 @@ class ModelManager:
             else:
                 genome = data
             
-            print(f"✓ Loaded {difficulty} AI model from {filepath}")
+            print(f" > Loaded {difficulty} model")
             return genome
         except Exception as e:
-            print(f"✗ Error loading model: {e}")
+            print(f" ! Load error: {e}")
+            return None
+    
+    def load_genome_and_config(self, difficulty='medium'):
+        """
+        Load genome and config WITHOUT creating network
+        Used when you want to create network manually
+        
+        Args:
+            difficulty: 'easy', 'medium', or 'hard'
+            
+        Returns:
+            Tuple (genome, config) or None if not found
+        """
+        filename = self.DIFFICULTY_CONFIGS[difficulty]['filename']
+        filepath = os.path.join(self.MODELS_DIR, filename)
+        
+        if not os.path.exists(filepath):
+            print(f" ! Model not found: {filepath}")
+            return None
+        
+        try:
+            with open(filepath, 'rb') as f:
+                data = pickle.load(f)
+            
+            # Handle new format (dict with genome and config)
+            if isinstance(data, dict) and 'genome' in data and 'config' in data:
+                genome = data['genome']
+                config = data['config']
+            else:
+                # Old format - load config separately
+                genome = data if not isinstance(data, dict) else data.get('genome', data)
+                
+                # Load config from main config file
+                config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
+                                          "config", "config-feedforward.txt")
+                config = neat.Config(
+                    neat.DefaultGenome,
+                    neat.DefaultReproduction,
+                    neat.DefaultSpeciesSet,
+                    neat.DefaultStagnation,
+                    config_path
+                )
+            
+            return (genome, config)
+        except Exception as e:
+            print(f" ! Load error: {e}")
             return None
     
     def load_ai_network(self, difficulty='medium'):
@@ -130,7 +176,6 @@ class ModelManager:
             if isinstance(data, dict) and 'genome' in data and 'config' in data:
                 genome = data['genome']
                 config = data['config']
-                print(f"✓ Loaded {difficulty} AI model from {filepath}")
             else:
                 # Old format - need to load config separately
                 genome = data if not isinstance(data, dict) else data.get('genome', data)
@@ -145,9 +190,8 @@ class ModelManager:
                     neat.DefaultStagnation,
                     config_path
                 )
-                print(f"✓ Loaded {difficulty} AI model from {filepath}")
         except Exception as e:
-            print(f"✗ Error loading model: {e}")
+            print(f" ! Load error: {e}")
             import traceback
             traceback.print_exc()
             return None
@@ -155,10 +199,9 @@ class ModelManager:
         # Create network
         try:
             network = neat.nn.FeedForwardNetwork.create(genome, config)
-            print(f"✓ Created neural network for {difficulty} AI")
             return (network, config)
         except Exception as e:
-            print(f"✗ Error creating network: {e}")
+            print(f" ! Network error: {e}")
             return None
     
     def model_exists(self, difficulty):
