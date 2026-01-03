@@ -1,257 +1,239 @@
-# 🎮 NEAT PONG AI - Neural Evolution Gaming
+# NEAT Pong AI
 
-**Trí Tuệ Nhân Tạo chơi Pong sử dụng thuật toán NEAT (NeuroEvolution of Augmenting Topologies)**
+Ứng dụng game Pong với AI được huấn luyện bằng thuật toán NEAT (NeuroEvolution of Augmenting Topologies).
 
----
+## Giới thiệu
 
-##  Giới Thiệu
+NEAT là thuật toán tiến hóa mạng neural cho phép AI tự động học cách chơi Pong thông qua quá trình tiến hóa. Thuật toán không chỉ tối ưu trọng số mà còn tự động xây dựng cấu trúc mạng neural phù hợp.
 
-Dự án sử dụng thuật toán **NEAT** (NeuroEvolution of Augmenting Topologies) để huấn luyện AI chơi game Pong. NEAT là một phương pháp tiến hóa mạng neural, tự động tối ưu hóa cả cấu trúc mạng lẫn trọng số kết nối.
+### Tính năng
 
-###  Tính Năng Chính
-
--  **AI Training**: Huấn luyện AI với thuật toán NEAT evolution
--  **Modern UI**: Giao diện đồ họa hiện đại với gradient, particles, animations
--  **Optimized Performance**: Training siêu nhanh (0.05s/generation, 3800x faster)
--  **Analytics Dashboard**: Theo dõi quá trình huấn luyện real-time
--  **3 Difficulty Levels**: Easy, Medium, Hard AI opponents
--  **Model Management**: Lưu và load trained models
--  **Smooth Gameplay**: 60 FPS với physics chính xác
-
----
+- Huấn luyện AI với thuật toán NEAT evolution
+- Giao diện đồ họa với hiệu ứng gradient và particles
+- Tốc độ training tối ưu (0.05s/generation)
+- Dashboard theo dõi quá trình training
+- 3 mức độ khó: Easy, Medium, Hard
+- Lưu và load trained models
+- Gameplay mượt mà 60 FPS
+- Hỗ trợ fullscreen với auto-scaling
 
 
+## Cài đặt
 
-##  Cài Đặt & Chạy Project
+### Yêu cầu hệ thống
 
-### 1️ Clone Repository
+- Python 3.8 trở lên
+- Pygame 2.6.1
+- neat-python 0.92
+- matplotlib 3.9.3
+- numpy 2.2.1
 
+### Hướng dẫn cài đặt
+
+1. Clone repository:
 ```bash
-git clone https://github.com/ntrduc1310/-NEAT-PONG-AI.git
-cd -NEAT-PONG-AI
+git clone https://github.com/ntrduc1310/MINIPROJECTAI_NEATPONG.git
+cd MINIPROJECTAI_NEATPONG
 ```
 
-### 2️ Cài Đặt Dependencies
-
-**Yêu cầu**: Python 3.8+
-
+2. Cài đặt dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-**Dependencies cần thiết**:
-- `pygame==2.6.1` - Game engine
-- `neat-python==0.92` - NEAT algorithm
-- `matplotlib==3.9.3` - Data visualization
-- `numpy==2.2.1` - Numerical computing
-
-### 3️ Chạy Game
-
-**Cách 1: Từ thư mục gốc**
+3. Chạy chương trình:
 ```bash
 cd src
 python main.py
 ```
 
-**Cách 2: Chạy trực tiếp**
-```bash
-python src/main.py
-```
 
----
+## Hướng dẫn sử dụng
 
-##  Hướng Dẫn Sử Dụng
+### Menu chính
 
-### Menu Chính
+Chương trình cung cấp các tùy chọn sau:
 
-Khi khởi động, bạn sẽ thấy menu với các options:
+- [T] Train AI Network - Huấn luyện AI mới
+- [E] Easy AI - Chơi với AI mức độ dễ
+- [M] Medium AI - Chơi với AI mức độ trung bình
+- [H] Hard AI - Chơi với AI mức độ khó
+- [Q] Quit - Thoát chương trình
 
-1. **>> Train AI Network** - Huấn luyện AI mới
-2. **[1] Easy AI** - Chơi với AI level dễ
-3. **[2] Medium AI** - Chơi với AI level trung bình  
-4. **[3] Hard AI** - Chơi với AI level khó
-5. **< Quit >** - Thoát game
+Phím tắt:
+- F11: Bật/tắt fullscreen
+- ESC: Thoát fullscreen
+- Theme toggle: Chuyển đổi giao diện sáng/tối
 
-###  Huấn Luyện AI
+### Huấn luyện AI
 
-1. Chọn option **">> Train AI Network"**
-2. Chọn difficulty level (easy/medium/hard)
-3. Chờ training hoàn thành (~4 seconds cho 50 generations)
-4. Model được lưu tự động vào thư mục `models/`
+1. Chọn "Train AI Network" từ menu
+2. Chọn mức độ khó (easy/medium/hard)
+3. Quá trình training sẽ tự động chạy (khoảng 4 giây cho 50 generations)
+4. Model được lưu tự động vào thư mục models/
 
-**Training Features**:
-- Real-time dashboard hiển thị fitness score
-- Logs được lưu vào `logs/` folder
-- Model tốt nhất được lưu với config
+Trong quá trình training:
+- Dashboard hiển thị fitness score theo thời gian thực
+- Logs được lưu vào thư mục logs/ với timestamp
+- Model tốt nhất tự động được lưu
 
-###  Chơi Game
+### Chơi game
 
-**Controls**:
-- `W` - Di chuyển lên
-- `S` - Di chuyển xuống
-- `P` - Pause game
-- `ESC` - Quit về menu
+Phím điều khiển:
+- W: Di chuyển lên
+- S: Di chuyển xuống
+- P: Pause/Resume
+- ESC: Quay về menu
 
-**Luật chơi**:
-- Người chơi (bên trái) vs AI (bên phải)
-- Điểm tăng khi đối thủ miss ball
-- First to 10 points wins
+Luật chơi:
+- Người chơi (paddle trái) đối đầu AI (paddle phải)
+- Mỗi lần đối thủ miss ball được 1 điểm
+- Người chơi đạt 10 điểm trước sẽ thắng
 
----
 
-##  Cấu Trúc Project
+## Cấu trúc project
 
 ```
 NEAT-Pong-Python/
 ├── config/
-│   └── config-feedforward.txt      # NEAT algorithm configuration
+│   └── config-feedforward.txt      # Cấu hình NEAT algorithm
 ├── src/
-│   ├── ai_engine/                  # AI & NEAT engine
-│   │   ├── trainer.py              # Training orchestration
-│   │   ├── predictor.py            # AI prediction logic
-│   │   └── model_manager.py        # Model save/load
+│   ├── ai_engine/                  # Module AI và NEAT
+│   │   ├── trainer.py              # Quản lý training
+│   │   ├── predictor.py            # Logic prediction
+│   │   └── model_manager.py        # Lưu/load model
 │   ├── game_engine/                # Game mechanics
-│   │   ├── game_manager.py         # Core game loop
-│   │   ├── ball.py                 # Ball physics
-│   │   └── paddle.py               # Paddle mechanics
-│   ├── ui/                         # User interface
-│   │   ├── menu.py                 # Main menu system
-│   │   └── visuals.py              # Visual effects
-│   ├── features/                   # Additional features
-│   │   ├── analytics.py            # Training analytics
+│   │   ├── game_manager.py         # Game loop chính
+│   │   ├── ball.py                 # Vật lý bóng
+│   │   └── paddle.py               # Cơ chế paddle
+│   ├── ui/                         # Giao diện người dùng
+│   │   ├── menu.py                 # Menu system
+│   │   └── visuals.py              # Hiệu ứng visual
+│   ├── features/                   # Tính năng bổ sung
+│   │   ├── analytics.py            # Phân tích training
 │   │   └── powerups.py             # Power-up system
-│   ├── models/                     # Saved AI models
+│   ├── models/                     # AI models đã lưu
 │   ├── logs/                       # Training logs
 │   └── main.py                     # Entry point
-├── requirements.txt                # Python dependencies
-└── README.md                       # This file
+├── requirements.txt
+└── README.md
 ```
 
----
 
-##  NEAT Configuration
+## Cấu hình NEAT
 
-File config tại `config/config-feedforward.txt`:
+File config tại config/config-feedforward.txt chứa các tham số chính:
 
-**Key Parameters**:
-- `pop_size = 30` - Population size (số lượng genomes mỗi generation)
-- `fitness_threshold = 400` - Target fitness để dừng training
-- `num_inputs = 3` - Ball position (y), ball velocity (y), paddle position (y)
-- `num_outputs = 1` - Paddle movement (-1 to 1)
-- `activation_default = tanh` - Activation function
+### Tham số quan trọng
 
-**Network Evolution**:
-- Tự động thêm/xóa nodes và connections
+- pop_size = 30: Kích thước population mỗi generation
+- fitness_threshold = 400: Ngưỡng fitness để dừng training
+- num_inputs = 3: Vị trí bóng (y), vận tốc bóng (y), vị trí paddle (y)
+- num_outputs = 1: Hướng di chuyển paddle (-1 đến 1)
+- activation_default = tanh: Hàm activation
+
+### Cơ chế evolution
+
+NEAT tự động điều chỉnh cấu trúc mạng trong quá trình training:
+- Thêm/xóa nodes và connections
 - Mutation rates được tối ưu cho game Pong
-- Compatibility threshold để maintain diversity
+- Compatibility threshold duy trì diversity trong population
 
----
 
-##  Performance Optimization
+## Tối ưu hóa performance
 
-Dự án đã được optimize để training **cực nhanh**:
+Project đã được tối ưu để đạt tốc độ training cao:
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Time/Generation | ~190s | ~0.05s | **3800x faster** |
-| Population Size | 50 | 30 | Reduced 40% |
-| Max Hits/Game | unlimited | 15 | Faster convergence |
-| Game Timeout | unlimited | 5s | Prevent infinite loops |
-| FPS Cap | 60 | None | Maximum speed |
+| Metric | Trước | Sau | Cải thiện |
+|--------|-------|-----|-----------|
+| Thời gian/Generation | ~190s | ~0.05s | 3800x |
+| Population Size | 50 | 30 | Giảm 40% |
+| Max Hits/Game | unlimited | 15 | Hội tụ nhanh hơn |
+| Game Timeout | unlimited | 5s | Tránh vòng lặp vô hạn |
+| FPS Cap | 60 | None | Tốc độ tối đa |
 
-**Training Speed**: 50 generations trong ~4 giây!
+Kết quả: Training 50 generations trong khoảng 4 giây.
 
----
 
-##  Training Analytics
+## Training analytics
 
-Mỗi lần training sẽ tạo 2 files trong `logs/`:
+Mỗi lần training tạo 2 file CSV trong thư mục logs/:
 
-1. **generation_[timestamp].csv** - Generation-level stats
-   - Generation number
-   - Best fitness
-   - Average fitness
-   - Species count
-   - Time elapsed
+### generation_[timestamp].csv
+Thống kê theo generation:
+- Generation number
+- Best fitness
+- Average fitness
+- Species count
+- Time elapsed
 
-2. **genome_[timestamp].csv** - Genome-level details
-   - Individual genome IDs
-   - Fitness scores
-   - Species assignment
+### genome_[timestamp].csv
+Chi tiết từng genome:
+- Genome ID
+- Fitness score
+- Species assignment
 
-**Sử dụng data**:
+Ví dụ phân tích data:
 ```python
 import pandas as pd
 df = pd.read_csv('logs/generation_20251219_143521.csv')
 print(df['best_fitness'].max())
 ```
 
----
 
-##  UI Features
+## Giao diện
 
-### Visual Effects
-- **Gradient Backgrounds** - Modern color schemes
-- **Particle Systems** - 50+ animated particles
-- **Smooth Animations** - Title floating, button scaling
-- **Glow Effects** - Score highlights, button hovers
-- **Professional Typography** - Clean, readable fonts
+### Hiệu ứng visual
+- Gradient backgrounds
+- Particle system (50+ particles)
+- Smooth animations
+- Glow effects cho score và buttons
+- Typography rõ ràng dễ đọc
 
-### Color Scheme
-- Player (You): Blue (#4A90E2)
-- AI Opponent: Red (#E74C3C)
+### Bảng màu
+- Player: Blue (#4A90E2)
+- AI: Red (#E74C3C)
 - Background: Dark gradient (#1A1A2E → #16213E)
 - Accents: White/Green/Gold
 
----
 
-## Troubleshooting
+## Xử lý lỗi thường gặp
 
-### Lỗi: "No module named 'neat'"
+### Lỗi thiếu module
 ```bash
+# No module named 'neat'
 pip install neat-python
-```
 
-### Lỗi: "pygame not found"
-```bash
+# pygame not found
 pip install pygame
 ```
 
-### Lỗi: "Model not found"
-- Cần train AI trước khi chơi
-- Chọn option ">> Train AI Network" trong menu
+### Lỗi không tìm thấy model
+Cần train AI trước khi chơi. Chọn "Train AI Network" từ menu để tạo model mới.
 
-### Training quá chậm
-- Đảm bảo đang dùng code mới nhất
-- Check file config có `pop_size = 30`
+### Training chậm
+Kiểm tra:
+- Đang sử dụng code mới nhất
+- File config có pop_size = 30
+- Không chạy nhiều ứng dụng nặng khác
 
 ### Game bị lag
-- Close các ứng dụng khác
-- Giảm population size trong config
-
----
-
-##  Tài Liệu Tham Khảo
-
-- [NEAT Algorithm Paper](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf)
-- [NEAT-Python Documentation](https://neat-python.readthedocs.io/)
-- [Pygame Documentation](https://www.pygame.org/docs/)
-
----
-
-##  License
-
-MIT License - Free to use for educational purposes
-
----
-
-##  Credits
-
-- **NEAT Algorithm**: Kenneth O. Stanley
-- **Original Tutorial**: Tech With Tim
-- **Team Project**: TV1, TV2, TV3, TV4
-- **University**: [Your University Name]
-
----
+- Đóng các ứng dụng không cần thiết
+- Giảm population size trong file config nếu cần
 
 
+## Tài liệu tham khảo
+
+- NEAT Algorithm Paper: http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf
+- NEAT-Python Documentation: https://neat-python.readthedocs.io/
+- Pygame Documentation: https://www.pygame.org/docs/
+
+## License
+
+MIT License
+
+## Nhóm phát triển
+
+Project: NEAT Pong AI Training System
+Team: TV1 (AI/ML), TV2 (Physics), TV3 (Engine & Analytics), TV4 (UI/Graphics)
+Powered by NEAT-Python & Pygame
