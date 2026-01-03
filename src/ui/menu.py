@@ -236,12 +236,20 @@ class MainMenu:
     def calculate_max_scroll(self):
         """Calculate maximum scroll based on content height"""
         scale = min(self.width / 800, self.height / 600)
-        # Content area (buttons + spacing)
-        content_height = int(220 * scale) + (5 * int(85 * scale)) + int(65 * scale)
-        # Visible area (excluding header and footer)
-        visible_height = self.height - int(200 * scale) - int(120 * scale)
         
-        self.max_scroll = max(0, content_height - visible_height)
+        # Windowed mode with 2-column layout doesn't need scroll
+        if self.width == 800 and self.height == 600:
+            self.max_scroll = 0
+        else:
+            # For fullscreen, calculate scroll space
+            button_area_height = int(220 * scale) + (5 * int(100 * scale)) + int(65 * scale)
+            extra_padding = int(250 * scale)
+            content_height = button_area_height + extra_padding
+            
+            visible_height = self.height - int(180 * scale) - int(100 * scale)
+            calculated_scroll = content_height - visible_height
+            self.max_scroll = max(150, calculated_scroll)
+        
         return self.max_scroll
     
     def toggle_theme(self):
@@ -320,60 +328,119 @@ class MainMenu:
         # Calculate scale factor for responsive design
         scale = min(self.width / 800, self.height / 600)
         
-        button_width = int(350 * scale)
-        button_height = int(65 * scale)
-        button_x = self.width // 2 - button_width // 2
-        start_y = int(220 * scale)
-        spacing = int(85 * scale)
+        # Check if windowed mode (800x600)
+        is_windowed = (self.width == 800 and self.height == 600)
         
-        # Calculate max scroll
+        if is_windowed:
+            # 2-column layout for windowed mode
+            button_width = int(300 * scale)
+            button_height = int(60 * scale)
+            spacing_x = int(50 * scale)
+            spacing_y = int(80 * scale)
+            start_y = int(220 * scale)
+            
+            # Calculate positions for 2 columns
+            left_x = self.width // 2 - button_width - spacing_x // 2
+            right_x = self.width // 2 + spacing_x // 2
+            
+            buttons = {
+                'train': MenuButton(
+                    left_x, start_y,
+                    button_width, button_height,
+                    "[T] Train AI Network",
+                    self.button_font,
+                    color=(30, 120, 30),
+                    hover_color=(40, 180, 40)
+                ),
+                'play_easy': MenuButton(
+                    right_x, start_y,
+                    button_width, button_height,
+                    "[E] Easy AI",
+                    self.button_font,
+                    color=(40, 90, 200),
+                    hover_color=(60, 120, 255)
+                ),
+                'play_medium': MenuButton(
+                    left_x, start_y + spacing_y,
+                    button_width, button_height,
+                    "[M] Medium AI",
+                    self.button_font,
+                    color=(180, 100, 30),
+                    hover_color=(220, 140, 50)
+                ),
+                'play_hard': MenuButton(
+                    right_x, start_y + spacing_y,
+                    button_width, button_height,
+                    "[H] Hard AI",
+                    self.button_font,
+                    color=(180, 30, 30),
+                    hover_color=(240, 50, 50)
+                ),
+                'quit': MenuButton(
+                    self.width // 2 - button_width // 2, start_y + spacing_y * 2,
+                    button_width, button_height,
+                    "[Q] Quit",
+                    self.button_font,
+                    color=(80, 80, 80),
+                    hover_color=(120, 120, 120)
+                )
+            }
+        else:
+            # 1-column layout for fullscreen/other resolutions
+            button_width = int(350 * scale)
+            button_height = int(65 * scale)
+            button_x = self.width // 2 - button_width // 2
+            start_y = int(220 * scale)
+            spacing = int(100 * scale)
+            
+            buttons = {
+                'train': MenuButton(
+                    button_x, start_y,
+                    button_width, button_height,
+                    "[T] Train AI Network",
+                    self.button_font,
+                    color=(30, 120, 30),
+                    hover_color=(40, 180, 40)
+                ),
+                'play_easy': MenuButton(
+                    button_x, start_y + spacing,
+                    button_width, button_height,
+                    "[E] Easy AI",
+                    self.button_font,
+                    color=(40, 90, 200),
+                    hover_color=(60, 120, 255)
+                ),
+                'play_medium': MenuButton(
+                    button_x, start_y + spacing * 2,
+                    button_width, button_height,
+                    "[M] Medium AI",
+                    self.button_font,
+                    color=(180, 100, 30),
+                    hover_color=(220, 140, 50)
+                ),
+                'play_hard': MenuButton(
+                    button_x, start_y + spacing * 3,
+                    button_width, button_height,
+                    "[H] Hard AI",
+                    self.button_font,
+                    color=(180, 30, 30),
+                    hover_color=(240, 50, 50)
+                ),
+                'quit': MenuButton(
+                    button_x, start_y + spacing * 4,
+                    button_width, button_height,
+                    "[Q] Quit",
+                    self.button_font,
+                    color=(80, 80, 80),
+                    hover_color=(120, 120, 120)
+                )
+            }
+        
+        # Calculate max scroll after creating buttons
         self.calculate_max_scroll()
         
-        buttons = {
-            'train': MenuButton(
-                button_x, start_y,
-                button_width, button_height,
-                "[T] Train AI Network",
-                self.button_font,
-                color=(30, 120, 30),
-                hover_color=(40, 180, 40)
-            ),
-            'play_easy': MenuButton(
-                button_x, start_y + spacing,
-                button_width, button_height,
-                "[E] Easy AI",
-                self.button_font,
-                color=(40, 90, 200),
-                hover_color=(60, 120, 255)
-            ),
-            'play_medium': MenuButton(
-                button_x, start_y + spacing * 2,
-                button_width, button_height,
-                "[M] Medium AI",
-                self.button_font,
-                color=(180, 100, 30),
-                hover_color=(220, 140, 50)
-            ),
-            'play_hard': MenuButton(
-                button_x, start_y + spacing * 3,
-                button_width, button_height,
-                "[H] Hard AI",
-                self.button_font,
-                color=(180, 30, 30),
-                hover_color=(240, 50, 50)
-            ),
-            'quit': MenuButton(
-                button_x, start_y + spacing * 4,
-                button_width, button_height,
-                "[Q] Quit",
-                self.button_font,
-                color=(80, 80, 80),
-                hover_color=(120, 120, 120)
-            )
-        }
-        
         return buttons
-    
+        
     def run(self):
         """
         Chạy menu loop
@@ -461,7 +528,8 @@ class MainMenu:
             
             self._draw()
         
-        return self.selected_option
+        # Return both choice and fullscreen state
+        return self.selected_option, self.fullscreen
     
     def _draw(self):
         """Draw menu with effects"""
@@ -518,22 +586,28 @@ class MainMenu:
                         (self.width // 2 - line_width, line_y),
                         (self.width // 2 + line_width, line_y), int(2 * scale))
         
-        # Create scrollable content area
+        # Define scrollable content area
         content_y = int(200 * scale)
         content_height = self.height - int(320 * scale)
         
-        # Save original button positions and apply scroll offset
+        # Set clipping rectangle for scrollable area
+        clip_rect = pygame.Rect(0, content_y, self.width, content_height)
+        self.win.set_clip(clip_rect)
+        
+        # Draw buttons with scroll offset
         for button in self.buttons.values():
             # Temporarily adjust Y position for scroll
             original_y = button.rect.y
             button.rect.y = original_y - self.scroll_offset
             
-            # Only draw if visible
-            if button.rect.y + button.rect.height > content_y and button.rect.y < content_y + content_height:
-                button.draw(self.win)
+            # Draw button (clipping will handle visibility)
+            button.draw(self.win)
             
             # Restore original position
             button.rect.y = original_y
+        
+        # Remove clipping
+        self.win.set_clip(None)
         
         # Theme toggle button (draw last so it's on top)
         self.theme_button.draw(self.win)
@@ -541,9 +615,8 @@ class MainMenu:
         # Fullscreen toggle button
         self.fullscreen_button.draw(self.win)
         
-        # Draw scrollbar if needed
-        if self.max_scroll > 0:
-            self._draw_scrollbar(theme, scale)
+        # Always draw scrollbar for better UX
+        self._draw_scrollbar(theme, scale)
         
         # Keyboard shortcuts hint (bottom left)
         hint_font = pygame.font.Font(None, int(20 * scale))
@@ -571,9 +644,6 @@ class MainMenu:
     
     def _draw_scrollbar(self, theme, scale):
         """Draw scrollbar on the right side"""
-        if self.max_scroll <= 0:
-            return
-        
         scrollbar_width = int(8 * scale)
         scrollbar_x = self.width - int(15 * scale)
         scrollbar_height = self.height - int(320 * scale)
@@ -585,11 +655,16 @@ class MainMenu:
         self.win.blit(track_surf, (scrollbar_x, scrollbar_y))
         
         # Calculate thumb size and position
-        content_ratio = scrollbar_height / (scrollbar_height + self.max_scroll)
-        thumb_height = max(int(30 * scale), int(scrollbar_height * content_ratio))
-        
-        scroll_ratio = self.scroll_offset / self.max_scroll if self.max_scroll > 0 else 0
-        thumb_y = scrollbar_y + int((scrollbar_height - thumb_height) * scroll_ratio)
+        if self.max_scroll > 0:
+            content_ratio = scrollbar_height / (scrollbar_height + self.max_scroll)
+            thumb_height = max(int(30 * scale), int(scrollbar_height * content_ratio))
+            
+            scroll_ratio = self.scroll_offset / self.max_scroll
+            thumb_y = scrollbar_y + int((scrollbar_height - thumb_height) * scroll_ratio)
+        else:
+            # Show full thumb if no scroll needed
+            thumb_height = scrollbar_height
+            thumb_y = scrollbar_y
         
         # Thumb
         thumb_surf = pygame.Surface((scrollbar_width, thumb_height), pygame.SRCALPHA)
@@ -609,9 +684,9 @@ def show_menu(width=800, height=600):
         width, height: Kích thước window
     
     Returns:
-        str: Selected option
+        tuple: (selected_option, fullscreen_state)
     """
     menu = MainMenu(width, height)
-    choice = menu.run()
+    choice, fullscreen = menu.run()
     menu.close()
-    return choice
+    return choice, fullscreen

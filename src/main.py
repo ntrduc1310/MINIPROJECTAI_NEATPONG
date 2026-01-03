@@ -124,12 +124,13 @@ def train_ai(config_path, target_difficulty="medium"):
     input("Press Enter to return to menu...")
 
 
-def play_vs_ai(difficulty="medium"):
+def play_vs_ai(difficulty="medium", fullscreen=False):
     """
     Chơi với AI
 
     Args:
         difficulty: 'easy', 'medium', 'hard'
+        fullscreen: Enable fullscreen mode
     """
     print(f"\n Loading {difficulty.upper()} AI opponent...")
 
@@ -152,39 +153,57 @@ def play_vs_ai(difficulty="medium"):
 
     # Initialize pygame
     pygame.init()
-    win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    
+    # Create window with fullscreen if enabled
+    if fullscreen:
+        display_info = pygame.display.Info()
+        win = pygame.display.set_mode((display_info.current_w, display_info.current_h), pygame.FULLSCREEN)
+        window_width = display_info.current_w
+        window_height = display_info.current_h
+    else:
+        win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        window_width = WINDOW_WIDTH
+        window_height = WINDOW_HEIGHT
+    
     pygame.display.set_caption(f"NEAT Pong - vs {difficulty.upper()} AI")
     clock = pygame.time.Clock()
 
     # Initialize game (TV2 - Dũng)
-    game = GameManager(win, WINDOW_WIDTH, WINDOW_HEIGHT)
+    game = GameManager(win, window_width, window_height)
+    
+    # Calculate scale factor for fullscreen
+    scale_factor = window_width / WINDOW_WIDTH
     
     # Adjust game speed based on difficulty for better balance
     if difficulty == "easy":
         # Easy: Much slower ball, faster player paddle
-        game.ball.MAX_VEL = 3.5
-        game.ball.x_vel *= 0.7
-        game.ball.y_vel *= 0.7
-        game.left_paddle.VEL = 6  # Player faster
-        game.right_paddle.VEL = 3  # AI slower
+        game.ball.MAX_VEL = 3.5 * scale_factor
+        game.ball.x_vel *= 0.7 * scale_factor
+        game.ball.y_vel *= 0.7 * scale_factor
+        game.left_paddle.VEL = 6 * scale_factor  # Player faster
+        game.right_paddle.VEL = 3 * scale_factor  # AI slower
     elif difficulty == "medium":
         # Medium: Balanced speed
-        game.ball.MAX_VEL = 5
-        game.left_paddle.VEL = 5
-        game.right_paddle.VEL = 4
+        game.ball.MAX_VEL = 5 * scale_factor
+        game.ball.x_vel *= scale_factor
+        game.ball.y_vel *= scale_factor
+        game.left_paddle.VEL = 5 * scale_factor
+        game.right_paddle.VEL = 4 * scale_factor
     elif difficulty == "hard":
         # Hard: Fast ball, normal player paddle
-        game.ball.MAX_VEL = 6.5
-        game.left_paddle.VEL = 5
-        game.right_paddle.VEL = 5
+        game.ball.MAX_VEL = 6.5 * scale_factor
+        game.ball.x_vel *= scale_factor
+        game.ball.y_vel *= scale_factor
+        game.left_paddle.VEL = 5 * scale_factor
+        game.right_paddle.VEL = 5 * scale_factor
 
     # Initialize features
-    powerup_manager = PowerUpManager(WINDOW_WIDTH, WINDOW_HEIGHT)
-    predictor = BallPredictor(WINDOW_WIDTH, WINDOW_HEIGHT, Paddle.WIDTH, Paddle.HEIGHT)
+    powerup_manager = PowerUpManager(window_width, window_height)
+    predictor = BallPredictor(window_width, window_height, Paddle.WIDTH, Paddle.HEIGHT)
 
     # Initialize UI (TV4 - Bảo)
     effects = VisualEffects()
-    score_display = ScoreDisplay(WINDOW_WIDTH, WINDOW_HEIGHT)
+    score_display = ScoreDisplay(window_width, window_height)
 
     # Game loop
     running = True
@@ -226,20 +245,20 @@ def play_vs_ai(difficulty="medium"):
             game.draw(draw_score=False, draw_hits=False)
             
             # Semi-transparent overlay
-            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+            overlay = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
             win.blit(overlay, (0, 0))
             
             # Title
             title_text = title_font.render(f"VS {difficulty.upper()} AI", True, (0, 255, 255))
-            title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
+            title_rect = title_text.get_rect(center=(window_width // 2, window_height // 3))
             win.blit(title_text, title_rect)
             
             # Instructions box
             box_width = 400
             box_height = 200
-            box_x = WINDOW_WIDTH // 2 - box_width // 2
-            box_y = WINDOW_HEIGHT // 2 - 50
+            box_x = window_width // 2 - box_width // 2
+            box_y = window_height // 2 - 50
             
             box_surf = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
             pygame.draw.rect(box_surf, (30, 30, 50, 220), box_surf.get_rect(), border_radius=15)
@@ -264,7 +283,7 @@ def play_vs_ai(difficulty="medium"):
                     continue
                 else:
                     text = small_font.render(line, True, (200, 220, 255))
-                text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, y_offset))
+                text_rect = text.get_rect(center=(window_width // 2, y_offset))
                 win.blit(text, text_rect)
                 y_offset += 30 if i == 0 else 25
             
@@ -276,15 +295,15 @@ def play_vs_ai(difficulty="medium"):
             game.draw(draw_score=True, draw_hits=True)
             
             # Semi-transparent overlay
-            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+            overlay = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 160))
             win.blit(overlay, (0, 0))
             
             # Pause box
             box_width = 350
             box_height = 150
-            box_x = WINDOW_WIDTH // 2 - box_width // 2
-            box_y = WINDOW_HEIGHT // 2 - box_height // 2
+            box_x = window_width // 2 - box_width // 2
+            box_y = window_height // 2 - box_height // 2
             
             box_surf = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
             pygame.draw.rect(box_surf, (30, 30, 50, 230), box_surf.get_rect(), border_radius=15)
@@ -293,16 +312,16 @@ def play_vs_ai(difficulty="medium"):
             
             # Pause text
             pause_title = title_font.render("PAUSED", True, (255, 255, 100))
-            pause_rect = pause_title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 30))
+            pause_rect = pause_title.get_rect(center=(window_width // 2, window_height // 2 - 30))
             win.blit(pause_title, pause_rect)
             
             # Instructions
             resume_text = small_font.render("Press P to Resume", True, (200, 220, 255))
-            resume_rect = resume_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 20))
+            resume_rect = resume_text.get_rect(center=(window_width // 2, window_height // 2 + 20))
             win.blit(resume_text, resume_rect)
             
             quit_text = small_font.render("Press ESC to Quit", True, (200, 220, 255))
-            quit_rect = quit_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
+            quit_rect = quit_text.get_rect(center=(window_width // 2, window_height // 2 + 50))
             win.blit(quit_text, quit_rect)
             
             pygame.display.update()
@@ -415,11 +434,11 @@ def play_vs_ai(difficulty="medium"):
             )
 
             win.blit(winner_text,
-                    (WINDOW_WIDTH // 2 - winner_text.get_width() // 2,
-                     WINDOW_HEIGHT // 2 - 50))
+                    (window_width // 2 - winner_text.get_width() // 2,
+                     window_height // 2 - 50))
             win.blit(score_text,
-                    (WINDOW_WIDTH // 2 - score_text.get_width() // 2,
-                     WINDOW_HEIGHT // 2 + 20))
+                    (window_width // 2 - score_text.get_width() // 2,
+                     window_height // 2 + 20))
 
             pygame.display.update()
             pygame.time.delay(3000)
@@ -448,7 +467,7 @@ def main():
     while True:
         # Show menu (TV4 - Bảo)
         try:
-            choice = show_menu(WINDOW_WIDTH, WINDOW_HEIGHT)
+            choice, is_fullscreen = show_menu(WINDOW_WIDTH, WINDOW_HEIGHT)
         except Exception as e:
             # Nếu menu UI lỗi trên Colab, dùng fallback text menu
             print("\n--- MENU ---")
@@ -464,6 +483,7 @@ def main():
             elif c == '4': choice = 'play_hard'
             elif c == '5': choice = 'quit'
             else: choice = 'unknown'
+            is_fullscreen = False
 
         if choice == 'train':
             print("\n--- SELECT DIFFICULTY TO TRAIN ---")
@@ -479,13 +499,13 @@ def main():
             train_ai(CONFIG_PATH, target_difficulty=target)
 
         elif choice == 'play_easy':
-            play_vs_ai('easy')
+            play_vs_ai('easy', is_fullscreen)
 
         elif choice == 'play_medium':
-            play_vs_ai('medium')
+            play_vs_ai('medium', is_fullscreen)
 
         elif choice == 'play_hard':
-            play_vs_ai('hard')
+            play_vs_ai('hard', is_fullscreen)
 
         elif choice == 'quit':
             print("\n" + "="*50)
