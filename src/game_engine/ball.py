@@ -43,27 +43,36 @@ class Ball:
     
     def draw(self, win, color=(255, 255, 255)):
         """
-        Vẽ bóng với glow effect
+        Vẽ bóng với glow effect hiện đại
         
         Args:
             win: Pygame window
-            color: Màu bóng (RGB tuple)
+            color: Màu bóng (RGB tuple) - mặc định trắng
         """
-        # Outer glow
-        glow_radius = self.RADIUS + 4
-        glow_surf = pygame.Surface((glow_radius * 2, glow_radius * 2), pygame.SRCALPHA)
-        for i in range(3, 0, -1):
-            alpha = 40 - i * 10
-            glow_color = (*color, alpha)
-            pygame.draw.circle(glow_surf, glow_color, (glow_radius, glow_radius), self.RADIUS + i)
-        win.blit(glow_surf, (self.x - glow_radius, self.y - glow_radius))
+        # Sử dụng màu tối cho ball trên nền sáng
+        ball_color = (50, 30, 20)
         
-        # Main ball
-        pygame.draw.circle(win, color, (self.x, self.y), self.RADIUS)
+        # Multi-layer glow effect
+        glow_radius = self.RADIUS + 6
+        glow_surf = pygame.Surface((glow_radius * 2 + 10, glow_radius * 2 + 10), pygame.SRCALPHA)
         
-        # Inner highlight
-        highlight_color = tuple(min(255, c + 100) for c in color)
-        pygame.draw.circle(win, highlight_color, (self.x - 2, self.y - 2), self.RADIUS // 2)
+        # Outer glow layers
+        for i in range(5, 0, -1):
+            alpha = 30 - i * 5
+            current_radius = self.RADIUS + i
+            glow_color = (*ball_color, alpha)
+            pygame.draw.circle(glow_surf, glow_color, 
+                             (glow_radius + 5, glow_radius + 5), current_radius)
+        
+        win.blit(glow_surf, (self.x - glow_radius - 5, self.y - glow_radius - 5))
+        
+        # Main ball with gradient
+        pygame.draw.circle(win, ball_color, (self.x, self.y), self.RADIUS)
+        
+        # Glossy highlight
+        highlight_color = (150, 120, 90)
+        pygame.draw.circle(win, highlight_color, 
+                          (self.x - 2, self.y - 2), self.RADIUS // 3)
     
     def move(self):
         """Di chuyển bóng theo vận tốc"""

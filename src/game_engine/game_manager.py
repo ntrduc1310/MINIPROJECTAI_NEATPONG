@@ -65,71 +65,170 @@ class GameManager:
         self.right_hits = 0
     
     def _draw_score(self):
-        """Vẽ điểm số với modern styling"""
-        # Player labels
-        label_font = pygame.font.Font(None, 28)
-        player_label = label_font.render("< YOU", True, (100, 200, 255))
-        ai_label = label_font.render("AI >", True, (255, 100, 100))
+        """Vẽ điểm số với modern styling - badges đẹp với icons"""
+        # Draw Player Badge (YOU) - Left side
+        badge_width = 160
+        badge_height = 50
+        left_x = self.window_width // 4
+        badge_y = 30
         
-        self.window.blit(player_label, 
-                        (self.window_width // 4 - player_label.get_width() // 2, 15))
-        self.window.blit(ai_label, 
-                        (self.window_width * 3 // 4 - ai_label.get_width() // 2, 15))
+        # Player badge
+        self._draw_player_badge(left_x, badge_y, badge_width, badge_height, 
+                               "PLAYER", (100, 200, 255))
         
-        # Scores with shadow
-        left_color = (100, 200, 255)
-        right_color = (255, 100, 100)
+        # AI badge  
+        right_x = self.window_width * 3 // 4
+        self._draw_ai_badge(right_x, badge_y, 140, badge_height,
+                           "AI", (255, 100, 100))
+        
+        # Scores với màu tối và shadow (đặt ở vị trí thấp hơn badges)
+        left_color = (50, 30, 20)
+        right_color = (50, 30, 20)
+        
+        score_y = 75  # Vị trí score thấp hơn badge
         
         # Left score
-        shadow_left = self.SCORE_FONT.render(f"{self.left_score}", True, (0, 0, 0))
+        shadow_left = self.SCORE_FONT.render(f"{self.left_score}", True, (255, 255, 255, 100))
         left_score_text = self.SCORE_FONT.render(f"{self.left_score}", True, left_color)
-        left_x = self.window_width // 4 - left_score_text.get_width() // 2
-        self.window.blit(shadow_left, (left_x + 2, 52))
-        self.window.blit(left_score_text, (left_x, 50))
+        left_x_pos = self.window_width // 4 - left_score_text.get_width() // 2
+        self.window.blit(shadow_left, (left_x_pos + 3, score_y + 3))
+        self.window.blit(left_score_text, (left_x_pos, score_y))
         
         # Right score
-        shadow_right = self.SCORE_FONT.render(f"{self.right_score}", True, (0, 0, 0))
+        shadow_right = self.SCORE_FONT.render(f"{self.right_score}", True, (255, 255, 255, 100))
         right_score_text = self.SCORE_FONT.render(f"{self.right_score}", True, right_color)
-        right_x = self.window_width * 3 // 4 - right_score_text.get_width() // 2
-        self.window.blit(shadow_right, (right_x + 2, 52))
-        self.window.blit(right_score_text, (right_x, 50))
+        right_x_pos = self.window_width * 3 // 4 - right_score_text.get_width() // 2
+        self.window.blit(shadow_right, (right_x_pos + 3, score_y + 3))
+        self.window.blit(right_score_text, (right_x_pos, score_y))
+    
+    def _draw_player_badge(self, x, y, width, height, text, border_color):
+        """Vẽ badge đẹp cho Player với icon"""
+        badge_x = x - width // 2
+        badge_y = y - height // 2
+        
+        # Outer glow
+        glow_surf = pygame.Surface((width + 10, height + 10), pygame.SRCALPHA)
+        pygame.draw.rect(glow_surf, (*border_color, 80), glow_surf.get_rect(), border_radius=15)
+        self.window.blit(glow_surf, (badge_x - 5, badge_y - 5))
+        
+        # Main badge background
+        pygame.draw.rect(self.window, (255, 255, 255), 
+                        (badge_x, badge_y, width, height), border_radius=12)
+        
+        # Border
+        pygame.draw.rect(self.window, border_color, 
+                        (badge_x, badge_y, width, height), 3, border_radius=12)
+        
+        # Icon - Gamepad
+        icon_x = badge_x + 15
+        icon_y = badge_y + height // 2
+        pygame.draw.circle(self.window, border_color, (icon_x, icon_y), 12)
+        pygame.draw.circle(self.window, (255, 255, 255), (icon_x, icon_y), 10)
+        pygame.draw.circle(self.window, border_color, (icon_x, icon_y), 8)
+        # D-pad
+        pygame.draw.rect(self.window, (255, 255, 255), (icon_x - 6, icon_y - 2, 12, 4))
+        pygame.draw.rect(self.window, (255, 255, 255), (icon_x - 2, icon_y - 6, 4, 12))
+        
+        # Text with shadow
+        font = pygame.font.Font(None, 32)
+        text_color = (80, 60, 40)
+        shadow = font.render(text, True, (50, 50, 50))
+        text_surf = font.render(text, True, text_color)
+        text_x = badge_x + 50
+        text_y = badge_y + height // 2 - text_surf.get_height() // 2
+        self.window.blit(shadow, (text_x + 2, text_y + 2))
+        self.window.blit(text_surf, (text_x, text_y))
+    
+    def _draw_ai_badge(self, x, y, width, height, text, border_color):
+        """Vẽ badge đẹp cho AI với icon chip"""
+        badge_x = x - width // 2
+        badge_y = y - height // 2
+        
+        # Outer glow
+        glow_surf = pygame.Surface((width + 10, height + 10), pygame.SRCALPHA)
+        pygame.draw.rect(glow_surf, (*border_color, 80), glow_surf.get_rect(), border_radius=15)
+        self.window.blit(glow_surf, (badge_x - 5, badge_y - 5))
+        
+        # Main badge background
+        pygame.draw.rect(self.window, (255, 255, 255), 
+                        (badge_x, badge_y, width, height), border_radius=12)
+        
+        # Border
+        pygame.draw.rect(self.window, border_color, 
+                        (badge_x, badge_y, width, height), 3, border_radius=12)
+        
+        # Icon - AI Chip
+        icon_x = badge_x + 25
+        icon_y = badge_y + height // 2
+        # Chip body
+        pygame.draw.rect(self.window, border_color, (icon_x - 8, icon_y - 8, 16, 16), border_radius=2)
+        pygame.draw.rect(self.window, (255, 255, 255), (icon_x - 6, icon_y - 6, 12, 12))
+        # Circuit lines
+        pygame.draw.line(self.window, border_color, (icon_x - 4, icon_y - 3), (icon_x + 4, icon_y - 3), 2)
+        pygame.draw.line(self.window, border_color, (icon_x - 4, icon_y), (icon_x + 4, icon_y), 2)
+        pygame.draw.line(self.window, border_color, (icon_x - 4, icon_y + 3), (icon_x + 4, icon_y + 3), 2)
+        # Pins
+        for i in [-1, 1]:
+            pygame.draw.line(self.window, border_color, (icon_x + 8 * i, icon_y - 6), (icon_x + 11 * i, icon_y - 6), 2)
+            pygame.draw.line(self.window, border_color, (icon_x + 8 * i, icon_y), (icon_x + 11 * i, icon_y), 2)
+            pygame.draw.line(self.window, border_color, (icon_x + 8 * i, icon_y + 6), (icon_x + 11 * i, icon_y + 6), 2)
+        
+        # Text with shadow
+        font = pygame.font.Font(None, 36)
+        text_color = (80, 60, 40)
+        shadow = font.render(text, True, (50, 50, 50))
+        text_surf = font.render(text, True, text_color)
+        text_x = badge_x + 55
+        text_y = badge_y + height // 2 - text_surf.get_height() // 2
+        self.window.blit(shadow, (text_x + 2, text_y + 2))
+        self.window.blit(text_surf, (text_x, text_y))
     
     def _draw_hits(self):
-        """Vẽ số hits với background"""
+        """Vẽ số hits với modern design"""
         total_hits = self.left_hits + self.right_hits
         
-        # Background box
-        box_width = 120
-        box_height = 35
+        # Background box với viền
+        box_width = 140
+        box_height = 45
         box_x = self.window_width // 2 - box_width // 2
-        box_y = self.window_height - 50
+        box_y = self.window_height - 60
         
-        # Semi-transparent background
-        bg_surf = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
-        pygame.draw.rect(bg_surf, (30, 30, 50, 180), bg_surf.get_rect(), border_radius=8)
-        self.window.blit(bg_surf, (box_x, box_y))
+        # White background with border
+        pygame.draw.rect(self.window, (255, 255, 255), 
+                        (box_x, box_y, box_width, box_height), border_radius=10)
+        pygame.draw.rect(self.window, (80, 60, 40), 
+                        (box_x, box_y, box_width, box_height), 3, border_radius=10)
         
         # Hits text
-        hits_font = pygame.font.Font(None, 28)
-        hits_text = hits_font.render(f"HITS: {total_hits}", True, (255, 220, 100))
+        hits_font = pygame.font.Font(None, 32)
+        hits_text = hits_font.render(f"HITS: {total_hits}", True, (80, 60, 40))
         self.window.blit(hits_text, 
-                        (self.window_width // 2 - hits_text.get_width() // 2, box_y + 8))
+                        (self.window_width // 2 - hits_text.get_width() // 2, box_y + 10))
+    
+    def _draw_gradient_background(self):
+        """Vẽ gradient background hiện đại (vàng-cam theo hình tham khảo)"""
+        # Tạo gradient từ vàng sáng sang cam
+        for y in range(self.window_height):
+            progress = y / self.window_height
+            # Màu vàng (255, 220, 100) -> cam (255, 160, 80)
+            r = 255
+            g = int(220 - (60 * progress))
+            b = int(100 - (20 * progress))
+            pygame.draw.line(self.window, (r, g, b), (0, y), (self.window_width, y))
     
     def _draw_divider(self):
         """Vẽ đường chia giữa với modern style"""
         center_x = self.window_width // 2
-        dash_height = 15
-        dash_spacing = 30
+        dash_height = 20
+        dash_spacing = 35
+        line_width = 5
         
         for i in range(0, self.window_height, dash_spacing):
-            # Gradient color based on position
-            progress = i / self.window_height
-            alpha = int(120 + 60 * abs(0.5 - progress))
-            color = (80, 150, 200) if i % 60 == 0 else (60, 120, 180)
-            
+            # Màu trắng với độ mờ cao cho professional look
             pygame.draw.rect(
-                self.window, color,
-                (center_x - 2, i, 4, dash_height)
+                self.window, (255, 255, 255),
+                (center_x - line_width//2, i, line_width, dash_height),
+                border_radius=3
             )
     
     def handle_collision(self):
@@ -199,15 +298,8 @@ class GameManager:
         if bg_color:
             self.window.fill(bg_color)
         else:
-            # Gradient background
-            for y in range(self.window_height):
-                progress = y / self.window_height
-                color = (
-                    int(5 + 10 * progress),
-                    int(10 + 15 * progress),
-                    int(20 + 25 * progress)
-                )
-                pygame.draw.line(self.window, color, (0, y), (self.window_width, y))
+            # Modern gradient background (yellow-orange like reference image)
+            self._draw_gradient_background()
         
         self._draw_divider()
         
@@ -217,10 +309,10 @@ class GameManager:
         if draw_hits:
             self._draw_hits()
         
-        # Vẽ game objects với màu đẹp hơn
-        self.left_paddle.draw(self.window, color=(100, 200, 255))  # Blue for player
-        self.right_paddle.draw(self.window, color=(255, 100, 100))  # Red for AI
-        self.ball.draw(self.window, color=(255, 255, 255))  # White ball
+        # Vẽ game objects - không cần chỉ định màu, dùng default
+        self.left_paddle.draw(self.window)
+        self.right_paddle.draw(self.window)
+        self.ball.draw(self.window)
     
     def move_paddle(self, left=True, up=True):
         """

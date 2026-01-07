@@ -42,30 +42,44 @@ class PowerUp:
         return pygame.time.get_ticks() - self.spawn_time > self.LIFETIME
 
     def draw(self, win):
-        """Vẽ power-up với icon đặc trưng"""
+        """Vẽ power-up với modern design và animation"""
         if not self.active:
             return
 
         bg_color = self.COLORS.get(self.type, (255, 255, 255))
-
-        # 1. Vẽ nền (Outer rectangle)
-        pygame.draw.rect(win, bg_color, (self.x, self.y, self.WIDTH, self.HEIGHT))
-
-        # 2. Vẽ viền đen (Inner border effect)
-        pygame.draw.rect(win, (0, 0, 0),
-                        (self.x + 3, self.y + 3, self.WIDTH - 6, self.HEIGHT - 6), 2)
-
-        # 3. Vẽ ICON ở giữa
+        
+        # Animation: floating effect
+        time = pygame.time.get_ticks()
+        float_offset = int(math.sin(time * 0.003) * 5)
+        current_y = self.y + float_offset
+        
+        # Pulsing glow effect
+        glow_alpha = int(100 + 50 * math.sin(time * 0.005))
+        
+        # Draw outer glow
+        glow_surf = pygame.Surface((self.WIDTH + 20, self.HEIGHT + 20), pygame.SRCALPHA)
+        glow_color = (*bg_color, glow_alpha)
+        pygame.draw.rect(glow_surf, glow_color, 
+                        (5, 5, self.WIDTH + 10, self.HEIGHT + 10), 
+                        border_radius=12)
+        win.blit(glow_surf, (self.x - 10, current_y - 10))
+        
+        # Draw main body with rounded corners
+        pygame.draw.rect(win, bg_color, 
+                        (self.x, current_y, self.WIDTH, self.HEIGHT), 
+                        border_radius=10)
+        
+        # Draw white border
+        pygame.draw.rect(win, (255, 255, 255),
+                        (self.x, current_y, self.WIDTH, self.HEIGHT), 
+                        3, border_radius=10)
+        
+        # Draw icon in center
         center_x = self.x + self.WIDTH // 2
-        center_y = self.y + self.HEIGHT // 2
-
-        # Chọn màu icon tương phản với màu nền
-        # Nền sáng (Vàng, Cyan, Cam, Xanh) -> Icon Đen
-        # Nền tối/đậm (Đỏ) -> Icon Trắng
-        icon_color = (0, 0, 0)
-        if self.type == PowerUpType.PADDLE_SIZE_DOWN: # Nền đỏ
-            icon_color = (255, 255, 255)
-
+        center_y = current_y + self.HEIGHT // 2
+        
+        # Icon color (dark for visibility on bright backgrounds)
+        icon_color = (50, 30, 20)
         self._draw_icon(win, center_x, center_y, icon_color)
 
     def _draw_icon(self, win, cx, cy, color):

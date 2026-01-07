@@ -38,7 +38,7 @@ class MenuButton:
             self.glow_alpha = max(0, self.glow_alpha - 10)
     
     def draw(self, win):
-        """Draw button with gradient and effects"""
+        """Draw button with semi-transparent background and modern effects"""
         self.update()
         
         # Calculate scaled rect
@@ -51,49 +51,74 @@ class MenuButton:
             scaled_height
         )
         
-        # Glow effect
+        # Glow effect when hovered
         if self.glow_alpha > 0:
             glow_surf = pygame.Surface((scaled_width + 20, scaled_height + 20), pygame.SRCALPHA)
-            glow_color = (*self.hover_color, self.glow_alpha)
+            glow_color = (80, 60, 40, self.glow_alpha)  # Nâu tối cho glow
             pygame.draw.rect(glow_surf, glow_color, 
-                           glow_surf.get_rect(), border_radius=15)
+                           glow_surf.get_rect(), border_radius=20)
             win.blit(glow_surf, (scaled_rect.x - 10, scaled_rect.y - 10))
         
-        # Interpolate color
+        # Semi-transparent background (white with alpha)
         t = self.hover_progress
-        current_color = tuple(
-            int(self.color[i] + (self.hover_color[i] - self.color[i]) * t)
-            for i in range(3)
-        )
+        base_alpha = 180 + int(50 * t)  # 180-230 alpha khi hover
         
-        # Button background with gradient
-        self._draw_gradient(win, scaled_rect, current_color)
+        bg_surf = pygame.Surface((scaled_width, scaled_height), pygame.SRCALPHA)
+        bg_color = (255, 255, 255, base_alpha)  # Trắng semi-transparent
+        pygame.draw.rect(bg_surf, bg_color, bg_surf.get_rect(), border_radius=15)
+        win.blit(bg_surf, (scaled_rect.x, scaled_rect.y))
         
-        # Border
-        border_color = tuple(min(255, c + 50) for c in current_color)
-        pygame.draw.rect(win, border_color, scaled_rect, 3, border_radius=12)
+        # Colored accent bar on left side
+        accent_width = 6
+        accent_surf = pygame.Surface((accent_width, scaled_height - 10), pygame.SRCALPHA)
+        accent_alpha = 200 + int(55 * t)
+        accent_color = (*self.color, accent_alpha)
+        pygame.draw.rect(accent_surf, accent_color, accent_surf.get_rect(), border_radius=3)
+        win.blit(accent_surf, (scaled_rect.x + 5, scaled_rect.y + 5))
         
-        # Text with shadow
-        text_surface = self.font.render(self.text, True, self.text_color)
+        # Border - dark brown to match theme
+        border_color = (80, 60, 40) if not self.is_hovered else (60, 40, 20)
+        border_width = 3 if not self.is_hovered else 4
+        pygame.draw.rect(win, border_color, scaled_rect, border_width, border_radius=15)
+        
+        # Text color based on button theme - màu khác nhau cho mỗi button
+        text_color = self._get_text_color()
+        
+        text_surface = self.font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(center=scaled_rect.center)
         
-        # Shadow
-        shadow_surface = self.font.render(self.text, True, (0, 0, 0))
-        shadow_rect = shadow_surface.get_rect(center=(scaled_rect.centerx + 2, scaled_rect.centery + 2))
+        # Subtle shadow
+        shadow_surface = self.font.render(self.text, True, (0, 0, 0, 80))
+        shadow_rect = shadow_surface.get_rect(center=(scaled_rect.centerx + 1, scaled_rect.centery + 1))
         win.blit(shadow_surface, shadow_rect)
         
         # Text
         win.blit(text_surface, text_rect)
     
-    def _draw_gradient(self, win, rect, color):
-        """Draw vertical gradient"""
-        for i in range(rect.height):
-            progress = i / rect.height
-            gradient_color = tuple(int(color[j] * (1 - progress * 0.3)) for j in range(3))
-            pygame.draw.line(win, gradient_color,
-                           (rect.left, rect.top + i),
-                           (rect.right, rect.top + i))
-        pygame.draw.rect(win, color, rect, border_radius=12)
+    def _get_text_color(self):
+        """Lấy màu text phù hợp với theme của button"""
+        # Dựa vào button color để chọn màu text
+        r, g, b = self.color
+        
+        # Train AI (xanh lá) -> text xanh lá đậm
+        if g > r and g > b and g > 100:
+            return (20, 80, 20)
+        
+        # Easy AI (xanh dương) -> text xanh dương đậm
+        elif b > r and b > g and b > 150:
+            return (30, 60, 150)
+        
+        # Hard AI (đỏ) -> text đỏ đậm
+        elif r > 150 and r > g and r > b and g < 50:
+            return (120, 20, 20)
+        
+        # Medium AI (cam/nâu) -> text cam đậm
+        elif r > 100 and g > 50 and b < 50:
+            return (120, 60, 20)
+        
+        # Quit (xám) -> text xám đậm
+        else:
+            return (50, 50, 50)
     
     def handle_event(self, event):
         """
@@ -129,28 +154,28 @@ class MainMenu:
         self.selected_option = None
         self.fullscreen = False
         
-        # Theme system
-        self.dark_mode = True
+        # Theme system - Yellow/Orange modern theme
+        self.dark_mode = False  # Mặc định dùng light theme vàng đẹp
         self.themes = {
             'dark': {
-                'bg_start': (10, 15, 35),
-                'bg_end': (30, 40, 75),
-                'particles': (100, 200, 255),
-                'title': (0, 255, 255),
-                'title_glow': (0, 200, 255),
-                'subtitle': (150, 220, 255),
-                'divider': (0, 200, 255),
-                'text': (100, 150, 180)
+                'bg_start': (30, 25, 15),      # Nâu tối
+                'bg_end': (60, 45, 25),         # Nâu vừa
+                'particles': (255, 200, 100),   # Vàng sáng
+                'title': (255, 220, 100),       # Vàng title
+                'title_glow': (255, 180, 50),   # Vàng glow
+                'subtitle': (255, 200, 120),    # Vàng nhạt
+                'divider': (255, 180, 80),      # Cam divider
+                'text': (200, 170, 130)         # Vàng text
             },
             'light': {
-                'bg_start': (240, 245, 255),
-                'bg_end': (200, 220, 245),
-                'particles': (100, 150, 255),
-                'title': (20, 100, 200),
-                'title_glow': (50, 130, 230),
-                'subtitle': (60, 120, 200),
-                'divider': (100, 150, 255),
-                'text': (80, 100, 130)
+                'bg_start': (255, 220, 100),    # Vàng sáng (như game)
+                'bg_end': (255, 160, 80),       # Cam (như game)
+                'particles': (200, 140, 60),    # Cam tối cho particles
+                'title': (60, 40, 20),          # Nâu tối cho title
+                'title_glow': (100, 70, 40),    # Nâu glow
+                'subtitle': (80, 60, 40),       # Nâu subtitle
+                'divider': (80, 60, 40),        # Nâu divider
+                'text': (100, 70, 40)           # Nâu text
             }
         }
         

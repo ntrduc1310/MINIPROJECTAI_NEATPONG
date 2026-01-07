@@ -33,24 +33,33 @@ class Paddle:
         
         Args:
             win: Pygame window
-            color: Màu vợt (RGB tuple)
+            color: Màu vợt (RGB tuple) - mặc định trắng
         """
         current_height = int(self.HEIGHT * self.height_modifier)
         
-        # Glow effect
-        glow_surf = pygame.Surface((self.WIDTH + 8, current_height + 8), pygame.SRCALPHA)
-        glow_color = (*color, 60)
-        pygame.draw.rect(glow_surf, glow_color, glow_surf.get_rect(), border_radius=6)
-        win.blit(glow_surf, (self.x - 4, self.y - 4))
+        # Sử dụng màu tối đậm cho vợt trên nền sáng
+        paddle_color = (60, 40, 30)
         
-        # Main paddle with gradient
-        for i in range(self.WIDTH):
-            progress = i / self.WIDTH
-            gradient_color = tuple(int(color[j] * (0.7 + 0.3 * progress)) for j in range(3))
-            pygame.draw.rect(win, gradient_color, (self.x + i, self.y, 1, current_height))
+        # Glow effect sáng
+        glow_surf = pygame.Surface((self.WIDTH + 12, current_height + 12), pygame.SRCALPHA)
+        for i in range(3):
+            glow_alpha = 40 - i * 10
+            glow_color = (*paddle_color, glow_alpha)
+            pygame.draw.rect(glow_surf, glow_color, 
+                           (i, i, self.WIDTH + 12 - 2*i, current_height + 12 - 2*i), 
+                           border_radius=8)
+        win.blit(glow_surf, (self.x - 6, self.y - 6))
         
-        # Border highlight
-        pygame.draw.rect(win, color, (self.x, self.y, self.WIDTH, current_height), 2, border_radius=4)
+        # Main paddle body
+        pygame.draw.rect(win, paddle_color, 
+                        (self.x, self.y, self.WIDTH, current_height), 
+                        border_radius=6)
+        
+        # Highlight edge
+        highlight_color = (100, 80, 60)
+        pygame.draw.rect(win, highlight_color, 
+                        (self.x, self.y, self.WIDTH, current_height), 
+                        3, border_radius=6)
     
     def move(self, up=True):
         """
