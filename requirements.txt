@@ -1,0 +1,70 @@
+# NEAT Pong - Python Dependencies
+# Generated for Python 3.8+
+
+# Core Dependencies
+# ================
+
+# NEAT Algorithm
+neat-python==0.92
+# NeuroEvolution of Augmenting Topologies library
+# Required for training AI with genetic algorithms
+
+# Game Engine
+pygame==2.5.2
+# Cross-platform game development library
+# Used for graphics, sound, and input handling
+
+# Data Analysis & Visualization
+# ==============================
+
+# Data manipulation
+numpy==1.24.3
+# Numerical computing library for array operations
+
+pandas==2.0.3
+# Data analysis and manipulation library
+# Used for CSV logging and analytics
+
+# Visualization
+matplotlib==3.7.2
+# Plotting library for data visualization
+# Used for generating training reports and graphs
+
+seaborn==0.12.2
+# Statistical data visualization based on matplotlib
+# Provides beautiful default styles for plots
+
+# Optional Dependencies
+# =====================
+
+# Development tools (uncomment if needed)
+# pytest==7.4.0              # Testing framework
+# pytest-cov==4.1.0          # Code coverage for pytest
+# black==23.7.0              # Code formatter
+# flake8==6.1.0              # Style guide enforcement
+# mypy==1.4.1                # Static type checker
+# pylint==2.17.5             # Code analysis tool
+
+# Documentation (uncomment if needed)
+# sphinx==7.1.2              # Documentation generator
+# sphinx-rtd-theme==1.3.0    # ReadTheDocs theme for Sphinx
+
+# Jupyter (uncomment if needed for analysis)
+# jupyter==1.0.0             # Interactive notebook
+# ipython==8.14.0            # Enhanced Python shell
+
+# Notes:
+# ======
+# - All versions are pinned for reproducibility
+# - Compatible with Python 3.8, 3.9, 3.10, 3.11
+# - Total install size: ~150 MB
+# - Installation time: 2-5 minutes (depending on connection)
+#
+# To install:
+#   pip install -r requirements.txt
+#
+# To update all packages:
+#   pip install --upgrade -r requirements.txt
+#
+# To freeze current environment:
+#   pip freeze > requirements-frozen.txt
