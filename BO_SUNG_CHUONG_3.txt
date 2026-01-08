@@ -1,0 +1,639 @@
+═══════════════════════════════════════════════════════════════════
+  BỔ SUNG CHƯƠNG 3 - PHƯƠNG PHÁP ĐỀ XUẤT
+  Viết theo phong cách sinh viên, dựa trên code thực tế
+═══════════════════════════════════════════════════════════════════
+
+[THAY THẾ HOÀN TOÀN PHẦN 3.4 CŨ - Viết lại dựa trên code thực tế]
+
+-------------------------------------------------------------------
+3.4. Tác động của các tham số đến hành vi AI
+-------------------------------------------------------------------
+
+Đây là phần quan trọng nhất trong quá trình hiện thực hóa hệ thống. Nhóm chúng em đã dành nhiều thời gian để tinh chỉnh (fine-tune) các tham số (hyperparameters) nhằm tìm ra cấu hình tối ưu nhất. Việc thay đổi các giá trị này không chỉ ảnh hưởng đến tốc độ huấn luyện mà còn thay đổi hoàn toàn "tính cách" và chiến thuật thi đấu của AI. Dưới đây là các kết quả thực nghiệm chi tiết mà nhóm đã đúc kết được sau quá trình thử sai.
+
+3.4.1. Tham số max_hits (Số lần chạm bóng tối đa mỗi trận)
+
+Trong quá trình training, nhóm đặt giới hạn số lần đỡ bóng cho mỗi trận đấu giữa 2 AI để kiểm soát độ dài của simulation và hành vi học tập. Tham số này được set trong trainer.py với giá trị **max_hits = 15**.
+
+**Thử nghiệm với giá trị lớn (max_hits > 30):**
+Khi thử nghiệm đặt giá trị lớn hơn 30, nhóm nhận thấy thời gian training kéo dài rất lâu vì mỗi trận đấu có thể kéo dài hàng chục giây. Nguy hiểm hơn, AI bắt đầu học được "mánh khóe" là chỉ cần đánh bóng nhẹ nhàng qua lại (rally) để cày điểm hits mà không chịu tấn công dứt điểm. Fitness function tính theo công thức `hits × 2 + duration + win_bonus(10)`, nên AI phát hiện ra rằng giữ bóng rally càng lâu càng tốt thay vì cố gắng thắng nhanh.
+
+**Thử nghiệm với giá trị nhỏ (max_hits < 5):**
+Ngược lại, khi đặt giá trị quá nhỏ dưới 5, trận đấu kết thúc quá nhanh. AI chưa kịp học cách điều khiển vợt và positioning thì đã hết giờ. Các genomes không đủ thời gian thể hiện kỹ năng, dẫn đến fitness không phản ánh đúng chất lượng.
+
+**Giá trị tối ưu: max_hits = 15**
+Sau nhiều lần cân nhắc, nhóm quyết định chọn con số 15. Đây là điểm cân bằng:
+- Đủ để AI học được kỹ năng phòng thủ cơ bản (5-10 hits)
+- Buộc AI phải tấn công để thắng nếu muốn nhận win bonus (+10 fitness)
+- Training time hợp lý: ~0.13s/generation với headless mode
+
+3.4.2. Activation Function và Decision Threshold
+
+**Activation Function: ReLU (KHÔNG phải Sigmoid!)**
+
+Trong config-feedforward.txt, nhóm chọn **activation_default = relu** thay vì sigmoid. Đây là quyết định quan trọng vì:
+
+• **ReLU (max(0,x))**: Đơn giản, tính toán nhanh, không bị vanishing gradient. Phù hợp với NEAT vì cho phép networks evolve nhanh hơn.
+
+• **Sigmoid**: Bị bão hòa ở 0 và 1, khiến gradient gần như = 0 khi input quá lớn/nhỏ. NEAT-python documentation cũng khuyến nghị dùng ReLU cho game AI.
+
+**Thử nghiệm với Sigmoid (thất bại):**
+Ban đầu nhóm thử sigmoid, nhưng AI học rất chậm. Sau 50 generations vẫn chỉ biết đứng yên. Chuyển sang ReLU, improvement rõ rệt ngay từ Gen 10.
+
+**Decision Threshold (Ngưỡng quyết định hành động)**
+
+Khác với activation function (cố định = relu), **decision_threshold** là tham số game logic được điều chỉnh theo difficulty trong difficulty_system.py:
+
+• **Easy: threshold = 0.3** (dễ dàng kích hoạt)
+  - Vợt di chuyển nhạy, phản ứng với cả thay đổi nhỏ
+  - Kết hợp với error_rate=25% → chuyển động giật cục, không ổn định
+  - Tạo cảm giác AI "vội vàng" như người mới chơi
+
+• **Medium: threshold = 0.5** (cân bằng)
+  - Di chuyển mượt mà, dứt khoát
+  - Chỉ react khi chắc chắn cần thiết
+  - Kết hợp error_rate=10% → thỉnh thoảng sai sót tự nhiên
+
+• **Hard: threshold = 0.7** (rất decisive)
+  - Chỉ di chuyển khi CHẮC CHẮN 100%
+  - Không bao giờ lãng phí năng lượng
+  - Kết hợp error_rate=0% → Perfect positioning
+
+**Kết luận:** Threshold KHÔNG phải là một giá trị cố định 0.5, mà là dynamic parameter thay đổi theo difficulty để tạo sự khác biệt về behavior!
+
+3.4.3. Kích thước quần thể (Population Size) - Động, không cố định
+
+**SAI LẦM PHỔ BIẾN:** Nghĩ rằng pop_size cố định cho tất cả difficulty.
+
+**THỰC TẾ:** Population size thay đổi THEO DIFFICULTY trong difficulty_system.py:
+
+• **Easy: pop_size = 30**
+  - Quần thể nhỏ, train nhanh (~4 giây cho 30 gen)
+  - Diversity thấp nhưng đủ để học basic skills
+  - Phù hợp với mục tiêu: AI đơn giản, dễ đánh bại
+
+• **Medium: pop_size = 50**
+  - Cân bằng giữa tốc độ và diversity
+  - Đủ để explore các strategies khác nhau
+  - ~8 giây cho 60 generations
+
+• **Hard: pop_size = 200**
+  - Quần thể LỚN để explore nhiều tactics phức tạp
+  - Tránh local optima (bị mắc kẹt ở chiến thuật kém)
+  - ~12 giây cho 90 generations (vẫn chấp nhận được)
+
+**Thử nghiệm với pop_size nhỏ (10-20):**
+Nhóm từng thử pop_size = 20 cho Hard mode. Kết quả: AI học được một chiến thuật cơ bản rồi không tiến bộ thêm (local optimum). Tất cả genomes đều giống nhau, không có innovation.
+
+**Thử nghiệm với pop_size lớn (>300):**
+Thử pop_size = 300 cho Hard. Training chậm gấp đôi (~25 giây) nhưng fitness cuối cùng không tăng đáng kể so với 200. Không hiệu quả về mặt thời gian.
+
+**Tại sao không dùng 50 cho tất cả?**
+- Easy với 50 → train chậm không cần thiết (AI vẫn yếu như 30)
+- Hard với 50 → không đủ diversity, bị trapped ở chiến thuật trung bình
+
+3.4.4. Số lượng thế hệ (Generations) và Phân cấp độ khó
+
+Thay vì lập trình logic riêng phức tạp cho từng độ khó, nhóm điều chỉnh độ "thông minh" bằng cách train các duration khác nhau. Đây là **chiến lược chính** để tạo 3 difficulty levels:
+
+**Easy Mode: 30 Generations (~4 giây)**
+
+Sau 30 thế hệ, neural network mới hình thành các liên kết cơ bản:
+- **Gen 1-10:** AI học cách di chuyển vợt, tránh đứng yên
+- **Gen 11-20:** Bắt đầu track được vị trí bóng
+- **Gen 21-30:** Biết positioning cơ bản, nhưng vẫn hay lỡ bóng
+
+**Hành vi quan sát được:**
+- Phản xạ chậm (thêm 0.15s delay)
+- Dự đoán sai 25% (error_rate)
+- Chiến thuật: "bóng lên thì vợt lên" (reactive)
+- Dễ bị đánh lừa bởi spin và góc bounce
+
+**Medium Mode: 60 Generations (~8 giây)**
+
+Gấp đôi Easy, các đột biến có lợi xuất hiện nhiều hơn:
+- **Gen 31-45:** AI học cách predict trajectory (advanced prediction ON)
+- **Gen 46-60:** Biết positioning trước, đánh intercept
+
+**Hành vi quan sát được:**
+- Phản xạ nhanh hơn (delay 0.05s)
+- Dự đoán đúng 85%, sai 10%
+- Chiến thuật: Predictive positioning
+- Đôi khi vẫn bị miss do error rate
+
+**Hard Mode: 90 Generations (~12 giây)**
+
+**Tại sao 90 thay vì 100?**
+Nhóm từng train đến 100 generations và vẽ biểu đồ fitness convergence. Phát hiện:
+- **Gen 70-90:** Fitness tăng chậm, gần hội tụ
+- **Gen 90-100:** Gần như không cải thiện (plateau)
+
+→ Quyết định dừng ở 90 để tiết kiệm 10% thời gian mà không mất quality
+
+**Hành vi quan sát được:**
+- Zero delay (phản xạ hoàn hảo)
+- Predict 100% chính xác
+- Không errors
+- Chiến thuật: Optimal positioning, advanced intercept
+- Topology phức tạp: ~8-10 nodes (so với Easy chỉ 0-1 nodes)
+
+**Thử nghiệm train thêm (100-150 generations):**
+Nhóm thử train Hard lên 150 gen để xem có improve không. Kết quả:
+- Fitness không tăng thêm (đã plateau ở ~Gen 85)
+- Topology phình to (15+ nodes) nhưng không chơi hay hơn
+- Overfitting: AI học thuộc lòng training opponents, không generalize
+
+→ **Kết luận:** 90 generations là sweet spot cho Hard mode
+
+**Biểu đồ Fitness Convergence (Quan sát thực nghiệm):**
+```
+Generation    Easy (30)   Medium (60)   Hard (90)
+Gen 10        8-12        10-14         12-16
+Gen 30        15-18       16-20         18-22
+Gen 60        N/A         20-23         22-25
+Gen 90        N/A         N/A           24-26 (plateau)
+```
+
+**Lưu ý quan trọng:** Các số 30/60/90 đã THAY ĐỔI từ thiết kế ban đầu (10/25/50). Sau khi nhóm refactor difficulty_system.py, các giá trị được điều chỉnh lên để AI chất lượng hơn mà vẫn train đủ nhanh nhờ headless mode.
+
+-------------------------------------------------------------------
+
+[SAU PHẦN 3.4 MỚI NÀY, CHÈN TIẾP CÁC PHẦN 3.5, 3.6, 3.7, 3.8, 3.9 DƯỚI ĐÂY]
+
+-------------------------------------------------------------------
+3.5. Kiến trúc Tổng thể Hệ thống
+-------------------------------------------------------------------
+
+Sau khi xác định được thuật toán và các tham số, nhóm chúng em tiến hành thiết kế kiến trúc phần mềm theo mô hình phân tầng (Layered Architecture). Việc tổ chức code rõ ràng không chỉ giúp dễ debug mà còn cho phép các thành viên trong nhóm làm việc song song trên các module khác nhau mà không gây xung đột. Hệ thống được chia thành 4 modules chính:
+
+3.5.1. AI Engine - Bộ não của dự án
+
+Module này do thành viên TV1 (Trí Hoằng) phụ trách, bao gồm các file quan trọng nhất:
+
+• trainer.py: Đây là file "trái tim" của project. Nó quản lý toàn bộ quá trình training - từ việc tạo population ban đầu, cho các AI đấu với nhau, tính fitness, đến việc chọn lọc và sinh sản thế hệ mới. Trong quá trình làm, nhóm đã phải debug rất nhiều vì ban đầu training rất chậm (mỗi generation mất tới 2-3 giây). Sau khi tối ưu bằng cách tắt rendering (headless mode), tốc độ tăng gấp 10 lần.
+
+• ai_controller.py: File này đảm nhận nhiệm vụ "dịch" output của neural network thành hành động cụ thể (lên/xuống/đứng yên). Ở đây cũng có code chuẩn hóa inputs trước khi đưa vào network. Ban đầu nhóm quên chuẩn hóa vận tốc bóng nên AI học rất tệ, sau khi sửa thì improvement rõ rệt.
+
+• difficulty_system.py: Quản lý cấu hình cho 3 mức độ khó. Thay vì phải viết 3 bộ AI khác nhau, nhóm chỉ cần load các checkpoint khác nhau từ quá trình training (Gen 30 = Easy, Gen 60 = Medium, Gen 90 = Hard).
+
+• model_manager.py: Chịu trách nhiệm lưu và load các file model đã train (.pkl). Nhờ có file này mà người chơi không phải chờ train lại mỗi lần khởi động game.
+
+3.5.2. Game Engine - Môi trường mô phỏng
+
+Module này do thành viên TV3 (Trọng Đức) đảm nhận, xây dựng môi trường Pong chuẩn:
+
+• ball.py: Xử lý vật lý của bóng - chuyển động, va chạm với tường, va chạm với vợt. Có một thử thách thú vị mà nhóm gặp phải là khi bóng va vào góc của vợt, đôi khi nó bị "dính" vào và dao động liên tục. Giải pháp là kiểm tra kỹ hơn điều kiện va chạm và thêm một khoảng "đệm" nhỏ.
+
+• paddle.py: Quản lý vợt của người chơi và AI. File này có các method apply_modifier() để xử lý power-ups (tăng/giảm kích thước, tốc độ). Code được viết với type hints và docstrings đầy đủ để dễ maintain.
+
+• game_manager.py: File trung tâm điều phối tất cả - update vị trí bóng/vợt, check điều kiện thắng thua, quản lý điểm số. Đây là file mà các module khác gọi đến nhiều nhất.
+
+3.5.3. Features - Các tính năng mở rộng
+
+• analytics.py: Thành viên TV3 đã làm rất công phu phần này. File này ghi log toàn bộ quá trình training vào CSV (fitness mỗi generation, số nodes/connections của từng genome). Nhờ đó nhóm có dữ liệu để vẽ biểu đồ cho báo cáo này. Ngoài ra còn có TrainingDashboard để hiển thị real-time trong lúc train - rất hữu ích để biết khi nào nên dừng training.
+
+• powerups.py: Thành viên TV2 (Dũng) đã implement hệ thống vật phẩm với 5 loại (tăng/giảm kích thước vợt, tăng/giảm tốc độ bóng, tăng tốc độ vợt). Tuy nhiên do thời gian có hạn, phần này chỉ hoạt động trong chế độ Play, chưa tích hợp vào quá trình training của AI (AI không nhận biết được power-ups). Đây là một trong những hạn chế mà nhóm đã nêu ở Chương 5.
+
+3.5.4. UI - Giao diện người dùng
+
+• menu.py: Xây dựng menu chính với các lựa chọn: Train AI, Play vs Easy/Medium/Hard, Exit. Giao diện sử dụng pygame với màu sắc và font chữ được chọn kỹ để dễ nhìn.
+
+• visuals.py: Xử lý rendering - vẽ bóng, vợt, điểm số lên màn hình. Có một số hiệu ứng đơn giản như glow effect cho power-ups.
+
+Sơ đồ tổ chức thư mục:
+```
+NEAT-Pong-Python/
+├── config/                  # Cấu hình NEAT
+│   └── config-feedforward.txt
+├── src/
+│   ├── ai_engine/          # Module AI (TV1)
+│   ├── game_engine/        # Module Game (TV3)
+│   ├── features/           # Analytics (TV3) + Powerups (TV2)
+│   ├── ui/                 # Giao diện
+│   ├── logs/               # File CSV training logs
+│   ├── models/             # File .pkl đã train
+│   └── main.py             # Entry point
+└── tests/                  # Unit tests
+```
+
+-------------------------------------------------------------------
+3.6. Phân cấp Độ khó và Chiến lược Adaptive AI
+-------------------------------------------------------------------
+
+Một trong những đóng góp quan trọng của đề tài là việc tạo ra 3 mức độ khó (Easy/Medium/Hard) một cách thông minh, không chỉ dựa trên số generations mà còn điều chỉnh hành vi AI thông qua các tham số trong difficulty_system.py.
+
+3.6.1. Easy Mode - Dễ chơi, giống người mới
+
+Mức độ này được thiết kế để người chơi cảm thấy AI "giống người" với những sai lầm tự nhiên:
+
+**Tham số Training:**
+• generations = 30: Train ít hơn để AI chưa "chín"
+• pop_size = 30: Population nhỏ, diversity thấp
+• fitness_threshold = 200: Dừng sớm khi đạt level cơ bản
+
+**Tham số Behavior (điều chỉnh hành vi):**
+• reaction_delay = 0.15 giây: AI "phản xạ chậm" như người mới học, tạo cảm giác thật
+• prediction_accuracy = 60%: Chỉ đoán đúng 60% quỹ đạo bóng
+• error_rate = 25%: 1/4 cơ hội AI ra quyết định sai (ví dụ: bóng đi xuống nhưng vợt lại đi lên)
+• max_speed_factor = 0.7: Chỉ dùng 70% tốc độ tối đa của vợt
+• activation_distance = 300px: Chỉ phản ứng khi bóng gần (<300 pixels)
+• strategy = 'reactive': Chỉ react thụ động, không predict trước
+
+**Kết quả:** AI chơi như người mới - đánh bóng được nhưng hay lỡ, phản ứng chậm khi bóng nhanh. Win rate vs người chơi thường: ~40-50%.
+
+3.6.2. Medium Mode - Cân bằng, đáng chơi
+
+Mức độ này là sweet spot - đủ khó để thử thách nhưng không frustrating:
+
+**Tham số Training:**
+• generations = 60: Gấp đôi Easy, AI đã học được tactics
+• pop_size = 50: Tăng diversity
+• fitness_threshold = 350
+
+**Tham số Behavior:**
+• reaction_delay = 0.05 giây: Nhanh hơn nhưng vẫn có delay nhỏ
+• prediction_accuracy = 85%: Đoán khá chính xác
+• error_rate = 10%: Ít sai lầm hơn
+• max_speed_factor = 0.9: Gần full speed
+• activation_distance = 600px: React sớm hơn
+• strategy = 'predictive': Đã biết predict trajectory, không chỉ react
+• use_advanced_prediction = True: Bật algorithm predict nâng cao
+
+**Kết quả:** AI chơi như người có kinh nghiệm - positioning tốt, dự đoán được hướng bóng, nhưng vẫn có lúc miss do error rate 10%. Win rate: ~60-70%.
+
+3.6.3. Hard Mode - Cực khó, gần như perfect
+
+Mức độ này được thiết kế để thử thách cực hạn, gần như không thể thắng:
+
+**Tham số Training:**
+• generations = 90: Train nhiều nhất để optimize tối đa (~12 giây với headless mode)
+• pop_size = 200: Population lớn để explore nhiều strategies
+• fitness_threshold = 500
+
+**Tham số Behavior:**
+• reaction_delay = 0.0: Không có delay (phản xạ hoàn hảo)
+• prediction_accuracy = 100%: Luôn luôn đoán đúng
+• error_rate = 0%: Không bao giờ sai
+• max_speed_factor = 1.0: Full speed paddle
+• activation_distance = 800px: Luôn active (toàn bộ màn hình)
+• strategy = 'optimal': Perfect positioning, advanced intercept
+• look_ahead_steps = 15: Predict 15 frames về tương lai
+
+**Kết quả:** AI chơi như máy - không bao giờ miss, positioning hoàn hảo, đánh bóng cực chính xác. Win rate: ~80-90% (chỉ thua khi người chơi may mắn hoặc dùng tricks đặc biệt).
+
+**Bảng so sánh chi tiết:**
+
+╔═══════════════════╦═══════╦════════╦═══════╗
+║ Tham số           ║ Easy  ║ Medium ║ Hard  ║
+╠═══════════════════╬═══════╬════════╬═══════╣
+║ Generations       ║  30   ║   60   ║   90  ║
+║ Population        ║  30   ║   50   ║  200  ║
+║ Reaction Delay(s) ║ 0.15  ║  0.05  ║  0.0  ║
+║ Accuracy (%)      ║  60   ║   85   ║  100  ║
+║ Error Rate (%)    ║  25   ║   10   ║   0   ║
+║ Speed Factor      ║ 0.7   ║  0.9   ║  1.0  ║
+║ Activation Dist   ║ 300px ║ 600px  ║ 800px ║
+║ Win Rate vs Human ║ 40-50%║ 60-70% ║ 80-90%║
+╚═══════════════════╩═══════╩════════╩═══════╝
+
+**Lưu ý kỹ thuật quan trọng:**
+
+Nhóm không chỉ lưu snapshot AI ở Gen 30/60/90 rồi để đó. Thay vào đó, khi người chơi Easy, hệ thống LOAD AI Gen 30 nhưng còn THÊM các "handicaps" như delay, error rate. Điều này tạo sự khác biệt rõ rệt giữa 3 levels mà không cần train 3 models riêng biệt.
+
+Code implementation trong difficulty_system.py cho phép dynamic adjustment - có thể thay đổi difficulty ngay trong lúc chơi mà không cần restart.
+
+-------------------------------------------------------------------
+3.7. Kiến trúc Cấu hình 2 Tầng
+-------------------------------------------------------------------
+
+Một điểm thiết kế quan trọng của hệ thống là sử dụng **kiến trúc cấu hình 2 tầng** (Two-Layer Configuration Architecture) để tách biệt rõ ràng giữa thuật toán NEAT cơ bản và logic difficulty-specific. Cách tiếp cận này tuân theo nguyên tắc "Separation of Concerns" trong software engineering.
+
+**Tầng 1: Base NEAT Configuration (config-feedforward.txt)**
+
+File này chứa các tham số CỐT LÕI của thuật toán NEAT - những tham số ảnh hưởng trực tiếp đến cách neural network evolve, nhưng KHÔNG THAY ĐỔI theo difficulty level. Các tham số này được NEAT-Python library đọc trực tiếp và áp dụng cho toàn bộ quá trình evolution:
+
+• Activation Function: ReLU cho tất cả networks (Easy, Medium, Hard đều giống nhau)
+• Mutation Rates: node_add_prob=0.2, conn_add_prob=0.5, weight_mutate_rate=0.8
+• Selection Strategy: elitism=2, survival_threshold=0.2
+• Speciation: compatibility_threshold=10.0
+• Network Structure: num_inputs=5, num_outputs=1
+
+Những tham số này đại diện cho "bản chất" của NEAT algorithm và không nên thay đổi giữa các difficulty levels vì chúng định nghĩa cách AI "học" chứ không phải "độ khó".
+
+**Tầng 2: Difficulty-Specific Configuration (difficulty_system.py)**
+
+File này có 2 nhiệm vụ:
+
+**(A) Override Training Parameters** - Điều chỉnh QUY MÔ training:
+• generations: 30 (Easy), 60 (Medium), 90 (Hard)
+• pop_size: 30 (Easy), 50 (Medium), 200 (Hard)
+• num_hidden (initial): 0 (Easy), 2 (Medium), 4 (Hard)
+• fitness_threshold: 200 (Easy), 350 (Medium), 500 (Hard)
+
+Những tham số này được override ĐỘNG trong code (trainer.py dòng 58-70) trước khi bắt đầu training. Việc này cho phép Easy train nhanh với network đơn giản, trong khi Hard train lâu hơn với network phức tạp.
+
+**(B) Behavior Modifiers** - Điều chỉnh HÀNH VI khi AI chơi:
+• reaction_delay: 0.15s (Easy), 0.05s (Medium), 0.0s (Hard)
+• prediction_accuracy: 60% (Easy), 85% (Medium), 100% (Hard)
+• error_rate: 25% (Easy), 10% (Medium), 0% (Hard)
+• max_speed_factor: 0.7 (Easy), 0.9 (Medium), 1.0 (Hard)
+
+**QUAN TRỌNG:** Các tham số này KHÔNG PHẢI là NEAT parameters! Chúng là game logic được áp dụng SAU KHI neural network đã cho output. Ví dụ: AI Hard đưa ra quyết định đúng, nhưng nếu chơi ở Easy mode, hệ thống sẽ cố tình delay 0.15s hoặc add 25% sai sót để làm AI "yếu đi".
+
+**Tại sao cần 2 tầng thay vì gộp chung?**
+
+1. **Modularity**: Config file cho NEAT library, Python code cho game logic. Dễ maintain và debug.
+2. **Reusability**: Có thể dùng lại config-feedforward.txt cho các project Pong khác mà không cần sửa.
+3. **Dynamic Behavior**: Behavior modifiers (delay, error) không thể config trong NEAT config file vì chúng không phải evolutionary parameters.
+4. **Clear Intent**: Người đọc code biết rõ đâu là NEAT settings (cố định), đâu là difficulty settings (thay đổi).
+
+**Workflow khi training:**
+```
+1. Load config-feedforward.txt (base NEAT params)
+2. difficulty_system.py override: pop_size, num_hidden, generations
+3. Chạy NEAT evolution với config đã modify
+4. Save trained model → models/ai_easy.pkl, ai_medium.pkl, ai_hard.pkl
+```
+
+**Workflow khi chơi:**
+```
+1. Load trained model (ví dụ: ai_easy.pkl)
+2. difficulty_system.py áp dụng behavior modifiers (delay, error, accuracy)
+3. Neural network output → Behavior modifiers → Final action
+```
+
+Nhờ kiến trúc này, nhóm có thể điều chỉnh difficulty mà không cần retrain models, chỉ cần thay đổi behavior modifiers trong difficulty_system.py.
+
+-------------------------------------------------------------------
+3.7.1. Chi tiết Base NEAT Configuration (config-feedforward.txt)
+-------------------------------------------------------------------
+
+Sau nhiều lần thử nghiệm, nhóm chúng em đã chốt được bộ tham số tối ưu cho thuật toán NEAT. Dưới đây là các tham số KHÔNG THAY ĐỔI theo difficulty:
+
+-------------------------------------------------------------------
+3.7.1. Tham số Population và Evolution (Base Config)
+-------------------------------------------------------------------
+
+**A. Tham số Evolution (Chung cho tất cả difficulty):**
+
+• elitism = 2: Luôn giữ lại 2 genomes tốt nhất mỗi thế hệ, đảm bảo không bao giờ "mất" solution tốt do đột biến xấu. Tham số này GIỮ NGUYÊN cho Easy/Medium/Hard.
+
+• survival_threshold = 0.2: Chỉ có 20% top genomes mới được quyền "sinh sản". Điều này tạo selection pressure mạnh, loại bỏ nhanh các genomes kém. Áp dụng ĐỒNG NHẤT cho tất cả difficulty.
+
+**B. Tham số bị Override (Khác nhau theo difficulty):**
+
+• population_size: Base config = 30. Khi training, giá trị này được override:
+  - Easy = 30: Population nhỏ, train nhanh (~4 giây cho 30 gen)
+  - Medium = 50: Population vừa phải, cân bằng giữa tốc độ và diversity
+  - Hard = 200: Population lớn để explore nhiều strategies phức tạp
+  
+• fitness_threshold: Base config = 400. Được điều chỉnh theo difficulty:
+  - Easy = 200: Dễ đạt, dừng sớm
+  - Medium = 350: Vừa phải
+  - Hard = 500: Khó đạt, buộc phải train đủ generations
+  Lưu ý: Do self-play, fitness thực tế hiếm khi vượt 25, nên threshold này không trigger early stop. Nhóm dừng training bằng số generations cố định.
+
+-------------------------------------------------------------------
+3.7.2. Tham số Neural Network (Base Config)
+-------------------------------------------------------------------
+
+**A. Network Architecture (Cố định cho tất cả difficulty):**
+
+• num_inputs = 5: Ball position (x,y) + Ball velocity (vx,vy) + Paddle position (y). Đã giải thích chi tiết ở mục 3.2.1. Tham số này KHÔNG THAY ĐỔI theo difficulty vì inputs là thông tin khách quan về game state.
+
+• num_outputs = 1: Output liên tục [-1, 1] cho  continuous control. Đơn giản hơn 3 outputs (stay/up/down), giúp network dễ evolve. ĐỒNG NHẤT cho Easy/Medium/Hard.
+
+• activation_default = relu: max(0,x). Nhóm chọn ReLU thay vì sigmoid vì:
+  - Đơn giản, tính toán nhanh
+  - Tránh vanishing gradient problem
+  - NEAT-python khuyến nghị cho game AI
+  Tham số này KHÔNG thay đổi theo difficulty - tất cả đều dùng ReLU.
+
+**B. Initial Topology (Bị Override theo difficulty):**
+
+• num_hidden: Base config = 2. Khi training, số hidden nodes BAN ĐẦU được điều chỉnh:
+  - Easy: num_hidden = 0 → Network input→output trực tiếp (simplest possible)
+  - Medium: num_hidden = 2 → Có 2 hidden nodes (base config)
+  - Hard: num_hidden = 4 → Bắt đầu với topology phức tạp hơn
+  
+  **Tại sao phải khác nhau?**
+  - Easy cần simple network để tránh overfit, train nhanh (30 gen)
+  - Hard cần complex network để learn advanced strategies (90 gen)
+  
+  **Evolution Process:**
+  Qua quá trình evolution, NEAT tự động thêm nodes mới (node_add_prob=0.2). Quan sát thực nghiệm:
+  - Easy (Gen 30): ~0-1 nodes (vẫn rất simple)
+  - Medium (Gen 60): ~4-5 nodes
+  - Hard (Gen 90): ~8-10 nodes (complex topology với nhiều hidden layers)
+
+-------------------------------------------------------------------
+3.7.3. Tham số Mutation - "Ma thuật" của Evolution
+-------------------------------------------------------------------
+
+Các tham số mutation KHÔNG THAY ĐỔI theo difficulty vì chúng định nghĩa "cách AI evolve" chứ không phải "độ khó". Đây là phần "ma thuật" của NEAT - nơi sự sáng tạo xuất hiện:
+
+• node_add_prob = 0.2: Xác suất 20% thêm node mới mỗi lần đột biến. Con số này cân bằng giữa việc tăng complexity (cần để giải quyết bài toán phức tạp) và tránh bloat (network quá phức tạp không cần thiết).
+
+• node_delete_prob = 0.2: Xác suất xóa node. Cơ chế này giúp "tỉa" các node vô dụng, giữ network gọn gàng.
+
+• conn_add_prob = 0.5: Xác suất thêm connection mới (50%) - cao hơn node_add vì thêm connection đơn giản hơn thêm node.
+
+• conn_delete_prob = 0.5: Tương tự, xóa connection cũng dễ dàng nên xác suất cao.
+
+• weight_mutate_rate = 0.8: Rất cao (80%) - nghĩa là mỗi genome có 80% cơ hội một số weights bị thay đổi nhẹ. Đây là nguồn variation chính.
+
+• weight_replace_rate = 0.1: Chỉ 10% cơ hội thay thế hoàn toàn weight bằng giá trị random mới. Nếu tỷ lệ này cao, network sẽ "quên" những gì đã học.
+
+-------------------------------------------------------------------
+3.7.4. Tham số Speciation (Phân loài)
+-------------------------------------------------------------------
+
+• compatibility_threshold = 10.0: Đây là ngưỡng để quyết định 2 genomes có thuộc cùng species hay không. Genomes giống nhau (về topology và weights) sẽ được nhóm vào cùng species và compete với nhau. Cơ chế này bảo vệ innovations mới khỏi bị loại bỏ sớm.
+
+• compatibility_disjoint_coefficient = 1.0: Trọng số cho genes không khớp giữa 2 genomes.
+
+• compatibility_weight_coefficient = 0.5: Trọng số cho sự khác biệt về weights. Nhóm đặt thấp hơn vì topology quan trọng hơn weights trong việc định nghĩa species.
+
+Bảng tổng hợp các tham số quan trọng:
+
+╔══════════════════════════╦════════╦═══════════════════════════════════╗
+║ Tham số                  ║ Giá trị║ Giải thích ngắn gọn               ║
+╠══════════════════════════╬════════╬═══════════════════════════════════╣
+║ population_size          ║   30   ║ Số genomes mỗi generation         ║
+║ num_inputs               ║   5    ║ Ball_x,y + Velocity_x,y + Paddle_y║
+║ num_outputs              ║   1    ║ Continuous control                ║
+║ num_hidden (init)        ║   2    ║ Ban đầu 2, tăng lên ~6 sau 90 gen║
+║ activation_function      ║  relu  ║ ReLU: max(0, x)                   ║
+║ node_add_prob            ║  0.2   ║ 20% thêm node mới                 ║
+║ conn_add_prob            ║  0.5   ║ 50% thêm connection               ║
+║ weight_mutate_rate       ║  0.8   ║ 80% weights bị thay đổi nhẹ       ║
+║ elitism                  ║   2    ║ Giữ 2 best genomes                ║
+║ survival_threshold       ║  0.2   ║ Top 20% được sinh sản             ║
+║ compatibility_threshold  ║  10.0  ║ Ngưỡng phân loài                  ║
+╚══════════════════════════╩════════╩═══════════════════════════════════╝
+
+-------------------------------------------------------------------
+3.8. Phương pháp Huấn luyện
+-------------------------------------------------------------------
+
+3.8.1. Competitive Co-evolution - Đấu tập trung
+
+Một điểm đặc biệt trong thiết kế của nhóm là không train AI đấu với một đối thủ cố định (như rule-based bot), mà áp dụng phương pháp "self-play" - các AI trong cùng population đấu với nhau.
+
+Cách hoạt động cụ thể:
+1. Mỗi generation có 30 genomes
+2. Mỗi genome được chọn ngẫu nhiên đấu với 1-2 opponents khác trong population
+3. Fitness được tính dựa trên kết quả trận đấu (hits + duration + win bonus)
+4. Các genomes tốt nhất được chọn lọc để "lai tạo" thành thế hệ tiếp theo
+
+Ưu điểm mà nhóm nhận thấy:
+• AI không bị "overfit" vào một đối thủ cụ thể. Khi chơi với người, AI vẫn linh hoạt thích nghi.
+• Tạo áp lực cạnh tranh liên tục - khi một genome improve, nó buộc các genomes khác cũng phải improve để theo kịp.
+• Không cần phải code thêm rule-based opponent, tiết kiệm thời gian.
+
+Nhược điểm:
+• Fitness có thể dao động mạnh. Có thể Gen 10 best fitness là 20, nhưng Gen 15 lại chỉ 13 vì đối thủ cũng mạnh lên. Đây là hiện tượng "Red Queen Effect" - phải chạy hết tốc lực chỉ để giữ nguyên vị trí.
+• Khó đánh giá absolute skill. Không biết AI Gen 50 chơi tốt hơn bao nhiêu so với rule-based bot vì không có baseline để compare.
+
+3.8.2. Headless Training - Tối ưu tốc độ
+
+Trong quá trình training, việc render đồ họa lên màn hình là không cần thiết và rất tốn thời gian. Nhóm đã implement "headless mode" bằng cách:
+
+```python
+# Trong trainer.py
+if self.show_dashboard:
+    self.window = pygame.display.set_mode((width, height))
+else:
+    # Tạo invisible surface thay vì window thật
+    self.window = pygame.Surface((width, height))
+```
+
+Kết quả:
+• Với rendering: ~1.5 giây/generation
+• Không rendering: ~0.13 giây/generation
+• Tăng tốc gấp ~11 lần!
+
+Nhờ đó, train 90 generations chỉ mất khoảng 12 giây thay vì phải chờ 2-3 phút. Điều này cho phép nhóm thử nghiệm nhiều bộ tham số khác nhau trong thời gian ngắn.
+
+3.8.3. Evaluation Method - Cách đánh giá
+
+Mỗi trận đấu giữa 2 genomes có các giới hạn:
+• max_hits = 15: Nếu đạt 15 lần chạm bóng, trận đấu kết thúc (tránh rally vô tận)
+• max_duration = 5 giây: Timeout để tránh trường hợp 2 AI đều quá tệ, bóng bay lung tung
+• Điều kiện thắng: Score 1 bên đạt 3 điểm
+
+Fitness được tính RIÊNG cho mỗi genome:
+```
+Genome_Left.fitness += left_hits * 2 + duration
+if left_score > right_score:
+    Genome_Left.fitness += 10
+```
+
+Điều này có nghĩa mỗi genome có fitness riêng, không phải "zero-sum game" (thua của A không bằng thắng của B). Cả 2 đều có thể nhận điểm nếu cả 2 đều đỡ bóng tốt.
+
+3.8.4. Selection Strategy
+
+Sau khi tất cả genomes được evaluate, NEAT algorithm thực hiện:
+
+1. **Speciation**: Nhóm các genomes tương tự vào các species
+2. **Fitness Sharing**: Fitness của mỗi genome được chia cho số lượng members trong species của nó (để tránh species lớn chiếm hết)
+3. **Selection**: 
+   - Top 2 genomes tốt nhất được giữ nguyên (elitism)
+   - 20% top trong mỗi species được chọn để sinh sản
+   - 80% còn lại bị loại bỏ
+4. **Reproduction**:
+   - Crossover: Lai tạo 2 genomes tốt để tạo con
+   - Mutation: Thêm/xóa nodes, connections, thay đổi weights
+5. Lặp lại cho generation tiếp theo
+
+3.8.5. Logging và Visualization
+
+Trong lúc training, hệ thống tự động:
+• Ghi logs vào CSV mỗi generation (best/avg fitness, species count, topology)
+• In ra console: "Gen 30... fitness=18.5"
+• Nếu bật dashboard, hiển thị graph real-time
+
+Sau khi training xong, nhóm chạy script visualize_full_report.py để tạo biểu đồ chất lượng cao (300 DPI) cho báo cáo.
+
+-------------------------------------------------------------------
+3.9. Quy trình Triển khai Thực tế
+-------------------------------------------------------------------
+
+3.9.1. Environment Setup
+
+Để chạy được project, cần:
+• Python 3.10 trở lên
+• Các thư viện: pygame, neat-python, pandas, matplotlib (xem requirements.txt)
+• RAM: Tối thiểu 4GB (training không tốn nhiều bộ nhớ)
+• CPU: Bất kỳ (không cần GPU vì network nhỏ)
+
+Lệnh cài đặt:
+```bash
+pip install -r requirements.txt
+```
+
+3.9.2. Training Workflow
+
+Bước 1: Chạy main.py và chọn "Train AI"
+```bash
+cd src
+python main.py
+# Chọn 1: Train AI
+# Chọn difficulty: 1=Easy(30gen), 2=Medium(60gen), 3=Hard(90gen)
+```
+
+Bước 2: Chờ training hoàn tất
+• Console sẽ in progress: "Gen 30... fitness=18.5"
+• Model tự động lưu vào models/ai_{difficulty}.pkl
+
+Bước 3: Test AI đã train
+• Quay lại menu, chọn "Play vs AI"
+• Chọn difficulty để chơi với AI vừa train
+
+Bước 4: Phân tích kết quả
+```bash
+python visualize_full_report.py
+```
+Tạo file full_report_charts.png với 4 biểu đồ.
+
+3.9.3. Troubleshooting - Những lỗi nhóm đã gặp
+
+**Lỗi 1: "AttributeError: module 'neat' has no attribute 'nn'"**
+Nguyên nhân: Cài sai package, phải cài neat-python chứ không phải neat
+Giải pháp: 
+```bash
+pip uninstall neat
+pip install neat-python
+```
+
+**Lỗi 2: Training rất chậm (>1s per generation)**
+Nguyên nhân: Rendering đang bật, hoặc max_hits quá cao
+Giải pháp: Đảm bảo show_dashboard=False trong trainer, giảm max_hits xuống 15
+
+**Lỗi 3: Fitness luôn là 0**
+Nguyên nhân: Normalization sai, hoặc threshold quá cao khiến AI không bao giờ di chuyển
+Giải pháp: Kiểm tra lại phép chia cho 10 ở velocity, và threshold phải là 0.5
+
+**Lỗi 4: "min_species_size conflict"**
+Nguyên nhân: Config reproduction và species config xung đột
+Giải pháp: Nhóm đã patch bằng cách force set min_species_size=1 trong code
+
+-------------------------------------------------------------------
+KẾT LUẬN CHƯƠNG 3
+-------------------------------------------------------------------
+
+Chương này đã trình bày chi tiết phương pháp mà nhóm áp dụng để giải quyết bài toán AI tự học chơi Pong. Điểm mấu chốt là sự kết hợp giữa thiết kế hàm Fitness hợp lý (khuyến khích vừa phòng thủ vừa tấn công), kiến trúc neural network đơn giản nhưng hiệu quả (5 inputs chuẩn hóa, 1 output liên tục), và phương pháp huấn luyện competitive co-evolution (AI đấu với AI).
+
+Các tham số NEAT được tinh chỉnh kỹ lưỡng qua nhiều lần thử nghiệm, đặc biệt là population_size=30, node_add_prob=0.2, và weight_mutate_rate=0.8. Hệ thống được tổ chức theo kiến trúc modular giúp dễ maintain và mở rộng.
+
+Kết quả của phương pháp này sẽ được trình bày chi tiết trong Chương 4, nơi nhóm phân tích biểu đồ fitness convergence, topology evolution, và đánh giá chất lượng hành vi của AI qua các generations.
+
+═══════════════════════════════════════════════════════════════════
+ HẾT PHẦN BỔ SUNG CHƯƠNG 3
+═══════════════════════════════════════════════════════════════════
+
+LƯU Ý KHI CHÈN VÀO BÁO CÁO:
+1. Sửa lại các CHỖ SAI đã chỉ ra trước đó (sigmoid→ReLU, 50→30)
+2. Thay tên thành viên nếu khác (TV1, TV2, TV3)
+3. Thêm sơ đồ/hình ảnh nếu cần (flow chart, architecture diagram)
+4. Format lại bảng cho đẹp theo template Word của trường

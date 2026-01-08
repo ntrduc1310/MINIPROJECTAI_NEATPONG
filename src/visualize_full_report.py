@@ -40,7 +40,7 @@ def plot_full_dashboard():
 
     # Tạo khung hình lớn chứa 4 biểu đồ con
     fig, axs = plt.subplots(2, 2, figsize=(15, 10))
-    fig.suptitle('Báo Cáo Thực Nghiệm NEAT Pong AI', fontsize=16, fontweight='bold')
+    fig.suptitle('Kết Quả Thực Nghiệm NEAT-Pong AI', fontsize=16, fontweight='bold')
 
     # --- BIỂU ĐỒ 1: SỰ HỘI TỤ (Fitness) ---
     ax1 = axs[0, 0]
@@ -89,8 +89,15 @@ def plot_full_dashboard():
     # Lưu và hiển thị
     plt.tight_layout()
     plt.subplots_adjust(top=0.92)  # Chừa chỗ cho Title chính
-    plt.savefig('full_report_charts.png', dpi=300)
-    print("Đã lưu ảnh 'full_report_charts.png'. Hãy chèn vào báo cáo!")
+    
+    # Lưu với chất lượng cao cho báo cáo
+    output_path = 'full_report_charts.png'
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    print(f"✅ Đã lưu biểu đồ: {output_path}")
+    print(f"   - Số generations: {len(df_gen)}")
+    print(f"   - Best Fitness cuối: {df_gen['BestFitness'].iloc[-1]:.2f}")
+    print(f"   - Avg Fitness cuối: {df_gen['AvgFitness'].iloc[-1]:.2f}")
+    print(f"   - Training time trung bình: {df_gen['Duration(s)'].mean():.3f}s/gen")
     plt.show()
 
 

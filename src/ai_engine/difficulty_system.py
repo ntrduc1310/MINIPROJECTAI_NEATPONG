@@ -59,7 +59,7 @@ class DifficultyConfig:
         
         'hard': {
             # NEAT Training Parameters
-            'generations': 100,
+            'generations': 90,
             'pop_size': 200,  # Tăng lên 200 để tránh conflict với species
             'fitness_threshold': 500,
             'min_species_size': 1,

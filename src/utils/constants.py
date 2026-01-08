@@ -123,8 +123,8 @@ class TrainingConstants:
     }
     
     # Neural network configuration
-    NUM_INPUTS: int = 3   # ball_x, ball_y, paddle_y (normalized)
-    NUM_OUTPUTS: int = 3  # stay, move_up, move_down
+    NUM_INPUTS: int = 5   # ball_x, ball_y, ball_vx, ball_vy, paddle_y (normalized)
+    NUM_OUTPUTS: int = 1  # continuous output [-1, 1] for paddle movement
     
     # Mutation rates
     WEIGHT_MUTATE_RATE: float = 0.8

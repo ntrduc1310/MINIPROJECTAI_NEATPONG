@@ -12,9 +12,9 @@ class ModelManager:
     
     MODELS_DIR = "models"
     DIFFICULTY_CONFIGS = {
-        'easy': {'generations': 10, 'filename': 'ai_easy.pkl'},
-        'medium': {'generations': 25, 'filename': 'ai_medium.pkl'},
-        'hard': {'generations': 50, 'filename': 'ai_hard.pkl'}
+        'easy': {'generations': 30, 'filename': 'ai_easy.pkl'},
+        'medium': {'generations': 60, 'filename': 'ai_medium.pkl'},
+        'hard': {'generations': 90, 'filename': 'ai_hard.pkl'}
     }
     
     def __init__(self, models_dir=None):

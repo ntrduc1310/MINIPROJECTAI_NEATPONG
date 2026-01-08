@@ -487,9 +487,9 @@ def main():
 
         if choice == 'train':
             print("\n--- SELECT DIFFICULTY TO TRAIN ---")
-            print("1. Easy (10 Generations)")
-            print("2. Medium (25 Generations)")
-            print("3. Hard (50 Generations)")
+            print("1. Easy (30 Generations)")
+            print("2. Medium (60 Generations)")
+            print("3. Hard (90 Generations)")
             d_choice = input("Enter selection (1-3): ")
 
             target = "medium"
