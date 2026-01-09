@@ -129,9 +129,9 @@ Kết quả test trên máy i5-8250U, 8GB RAM:
 
 | Độ khó | Generations | Thời gian | Win rate vs người |
 |--------|-------------|-----------|-------------------|
-| Easy | 10 | ~5 phút | 40-50% |
-| Medium | 25 | ~15 phút | 60-70% |
-| Hard | 50 | ~30 phút | 80-90% |
+| Easy | 30 | ~5 phút | 40-50% |
+| Medium | 60 | ~15 phút | 60-70% |
+| Hard | 90 | ~30 phút | 80-90% |
 
 ## Troubleshooting
 
