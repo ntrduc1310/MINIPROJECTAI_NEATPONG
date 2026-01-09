@@ -4,7 +4,7 @@ Hệ thống vật phẩm trong game - Optimized for NEAT
 """
 import pygame
 import random
-import math  # Thêm thư viện toán để tính va chạm chuẩn hơn
+import math
 
 class PowerUpType:
     """Các loại power-up"""
@@ -139,8 +139,7 @@ class PowerUp:
 
     def check_collision(self, ball_x, ball_y, ball_radius):
         """
-        [CẢI TIẾN] Kiểm tra va chạm giữa Hình Tròn (Bóng) và Hình Chữ Nhật (PowerUp).
-        Chính xác hơn cách check Box-Box cũ của code gốc.
+        Kiểm tra va chạm giữa Hình Tròn (Bóng) và Hình Chữ Nhật (PowerUp).
         """
         if not self.active:
             return False
@@ -173,7 +172,7 @@ class PowerUpManager:
         self.window_height = window_height
         self.active_powerups = []
         self.hit_count = 0
-        self.spawn_threshold = 5  # Giữ nguyên thông số gốc của bạn
+        self.spawn_threshold = 5
         self.max_powerups = 1
         self.active_effects = {}  # {effect_id: {'type': ..., 'expires': ...}}
 
@@ -275,7 +274,7 @@ class PowerUpManager:
             elif effect_type == PowerUpType.BALL_SPEED_DOWN:
                 modifiers['ball_speed'] *= 0.8
 
-        # [CẢI TIẾN] Clamp values: Giới hạn chỉ số để tránh lỗi game khi AI train (quá nhanh/quá nhỏ)
+        #Clamp values: Giới hạn chỉ số để tránh lỗi game khi AI train (quá nhanh/quá nhỏ)
         modifiers['paddle_height'] = max(0.5, min(modifiers['paddle_height'], 3.0))
         modifiers['ball_speed'] = max(0.5, min(modifiers['ball_speed'], 2.5))
 
@@ -283,7 +282,7 @@ class PowerUpManager:
 
     def get_ai_vision_data(self):
         """
-        [MỚI] Hàm hỗ trợ NEAT AI:
+        Hàm hỗ trợ NEAT AI:
         Trả về tọa độ powerup để làm input cho Neural Network.
         Returns: [x, y, type_index]
         Nếu không có powerup, trả về [-1, -1, -1]

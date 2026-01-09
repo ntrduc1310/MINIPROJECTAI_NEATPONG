@@ -93,7 +93,7 @@ def plot_full_dashboard():
     # Lưu với chất lượng cao cho báo cáo
     output_path = 'full_report_charts.png'
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"✅ Đã lưu biểu đồ: {output_path}")
+    print(f"Đã lưu biểu đồ: {output_path}")
     print(f"   - Số generations: {len(df_gen)}")
     print(f"   - Best Fitness cuối: {df_gen['BestFitness'].iloc[-1]:.2f}")
     print(f"   - Avg Fitness cuối: {df_gen['AvgFitness'].iloc[-1]:.2f}")
